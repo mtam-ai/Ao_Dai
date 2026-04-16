@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Doanh thu – Nhân viên TranThai</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <style>
+    body{margin:0;font-family:"Montserrat",sans-serif}.staff-layout{display:flex;min-height:100vh}
+    .staff-sidebar{width:230px;background:linear-gradient(180deg,#c8102e,#7a0b1c);padding:24px 16px;min-height:100vh;position:sticky;top:0;display:flex;flex-direction:column;flex-shrink:0}
+    .sidebar-brand{font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.2)}
+    .sidebar-nav{flex:1;margin-top:12px}.sidebar-link{display:block;color:rgba(255,255,255,.8);text-decoration:none;padding:11px 14px;border-radius:12px;margin-bottom:4px;font-weight:500;transition:.2s;font-size:14px}
+    .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.2);color:#fff}.sidebar-footer{border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+    .sidebar-footer-name{font-weight:700;color:#fff;font-size:14px}
+    .content{flex:1;padding:40px;background:linear-gradient(135deg,#fff6f0,#ffeaea);min-height:100vh}
+    .stat-card{border-radius:16px;padding:20px;color:#fff;text-align:center}
+    .stat-revenue{background:linear-gradient(135deg,#c8102e,#8b0000)}.stat-orders{background:linear-gradient(135deg,#0d6efd,#0050c8)}.stat-done{background:linear-gradient(135deg,#198754,#0e5236)}
+    .stat-num{font-size:22px;font-weight:800}.stat-label{font-size:12px;opacity:.9;margin-top:2px}
+    .status-chip{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+    .chip-pending{background:#fff3cd;color:#856404}.chip-confirmed{background:#cfe2ff;color:#084298}
+    .chip-shipping{background:#d1ecf1;color:#0c5460}.chip-done{background:#d4edda;color:#155724}.chip-cancelled{background:#f8d7da;color:#721c24}
+  </style>
+</head><body>
+<div class="staff-layout">
+  <div class="staff-sidebar">
+    <div class="sidebar-brand">Nhân viên</div>
+    <nav class="sidebar-nav">
+      <a href="/staff/orders.html" class="sidebar-link"><i class="bi bi-bag-check me-2"></i>Đơn hàng</a>
+      <a href="/staff/products.html" class="sidebar-link"><i class="bi bi-box me-2"></i>Sản phẩm</a>
+      <a href="/staff/support.html" class="sidebar-link"><i class="bi bi-chat-dots me-2"></i>Hỗ trợ KH</a>
+      <a href="/staff/sales.html" class="sidebar-link active"><i class="bi bi-graph-up me-2"></i>Doanh thu</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="small text-white-50">Đăng nhập với tư cách</div>
+      <div class="sidebar-footer-name" id="staffName">Nhân viên</div>
+      <button class="btn btn-sm btn-outline-light mt-2 w-100" onclick="doLogout()">Đăng xuất</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div><h3 class="fw-bold mb-0" style="color:#c8102e">Doanh thu hôm nay</h3><small class="text-muted" id="todayLabel"></small></div>
+      <span class="badge bg-warning text-dark fs-6">📅 Chỉ hiển thị trong ngày</span>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-6"><div class="stat-card stat-revenue"><div class="stat-num" id="statRevenue">0 đ</div><div class="stat-label">Doanh thu</div></div></div>
+      <div class="col-6 col-md-6"><div class="stat-card stat-done"><div class="stat-num" id="statDone">0</div><div class="stat-label">Đơn hoàn thành hôm nay</div></div></div>
+    </div>
+    <div class="card overflow-hidden border-0 shadow-sm">
+      <div class="px-4 py-3 d-flex justify-content-between" style="background:#fff8f8">
+        <span class="fw-bold" style="color:#c8102e">Đơn hàng hôm nay</span>
+        <span class="text-muted small" id="orderCount">0 đơn</span>
+      </div>
+      <table class="table table-hover mb-0">
+        <thead style="background:#fdf0f0"><tr>
+          <th style="color:#c8102e;font-size:13px">Mã đơn</th><th style="color:#c8102e;font-size:13px">Khách hàng</th>
+          <th style="color:#c8102e;font-size:13px">Giờ đặt</th><th style="color:#c8102e;font-size:13px">Tổng tiền</th><th style="color:#c8102e;font-size:13px">Trạng thái</th>
+        </tr></thead>
+        <tbody id="tableBody"><tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-danger"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="/shop-api.js"></script>
+<script>
+  const sess = session.get('staffSession');
+  if (!sess) location.href = '/staff/login.html';
+  document.getElementById('staffName').textContent = sess?.name || 'Nhân viên';
+  document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const SM = {pending:{l:'Chờ xác nhận',c:'chip-pending'},confirmed:{l:'Đã xác nhận',c:'chip-confirmed'},shipping:{l:'Đang giao',c:'chip-shipping'},done:{l:'Hoàn thành',c:'chip-done'},cancelled:{l:'Đã hủy',c:'chip-cancelled'}};
+
+  async function loadData() {
+    try {
+      const orders = await api.orders.getAll();
+      const today = new Date().toISOString().slice(0,10);
+      const todayOrders = orders.filter(o => o.orderDate && new Date(o.orderDate).toISOString().slice(0,10)===today);
+      const done = todayOrders.filter(o=>o.status==='done');
+      const rev = done.reduce((s,o)=>s+Number(o.total||0),0);
+      document.getElementById('statRevenue').textContent = fp(rev);
+      document.getElementById('statDone').textContent = done.length;
+      document.getElementById('orderCount').textContent = done.length + ' đơn hoàn thành';
+      const tb = document.getElementById('tableBody');
+      if (!done.length) { tb.innerHTML='<tr><td colspan="5" class="text-center text-muted py-5">Chưa có đơn hoàn thành nào hôm nay</td></tr>'; return; }
+      tb.innerHTML = done.map(o => {
+        return `<tr>
+          <td><strong style="color:#c8102e">#${String(o.id).slice(-6)}</strong></td>
+          <td>${o.customerName||'—'}</td>
+          <td class="small text-muted">${o.orderDate?new Date(o.orderDate).toLocaleTimeString('vi-VN'):'—'}</td>
+          <td class="fw-bold text-danger">${fp(o.total)}</td>
+          <td><span class="status-chip chip-done">Hoàn thành</span></td>
+        </tr>`;
+      }).join('');
+    } catch(e) { console.error(e); }
+  }
+
+  function fp(p){return Number(p).toLocaleString('vi-VN')+' đ';}
+  function doLogout(){session.remove('staffSession');location.href='/staff/login.html';}
+  loadData(); setInterval(loadData, 60000);
+</script>
+</body></html>

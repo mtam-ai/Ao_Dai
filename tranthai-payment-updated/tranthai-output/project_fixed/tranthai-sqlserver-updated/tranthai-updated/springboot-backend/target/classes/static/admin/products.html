@@ -1,0 +1,316 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sản phẩm – TranThai Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <style>
+    body{margin:0;font-family:"Montserrat",sans-serif}
+    .admin-layout{display:flex;min-height:100vh}
+    .admin-sidebar{width:230px;background:linear-gradient(180deg,#c8102e,#7a0b1c);padding:24px 16px;min-height:100vh;position:sticky;top:0;display:flex;flex-direction:column;flex-shrink:0}
+    .sidebar-brand{font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.2)}
+    .sidebar-nav{flex:1;margin-top:12px}
+    .sidebar-link{display:block;color:rgba(255,255,255,.8);text-decoration:none;padding:11px 14px;border-radius:12px;margin-bottom:4px;font-weight:500;transition:.2s;font-size:14px}
+    .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.2);color:#fff}
+    .sidebar-footer{border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+    .content-area{flex:1;padding:28px;background:linear-gradient(135deg,#fff6f0,#ffeaea,#fff5f5);min-height:100vh}
+    .form-card{background:#fff;border-radius:16px;padding:22px;box-shadow:0 8px 28px rgba(200,16,46,.1);margin-bottom:20px}
+    .table-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(200,16,46,.08)}
+    .table thead th{background:#c8102e;color:#fff;font-weight:600;font-size:13px;border:none;padding:12px 14px;white-space:nowrap}
+    .table tbody tr{transition:.15s}
+    .table tbody tr:hover{background:#fff5f5}
+    .table tbody td{vertical-align:middle;font-size:13px;padding:10px 14px;border-color:#f0e0e0}
+    .prod-thumb{width:44px;height:56px;object-fit:cover;border-radius:8px;border:1px solid #f0e0e0}
+    .status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+    .badge-green{background:#d4edda;color:#155724}.badge-yellow{background:#fff3cd;color:#856404}.badge-red{background:#f8d7da;color:#721c24}
+    .btn-action{width:32px;height:32px;border-radius:8px;border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;transition:.15s}
+    .btn-edit{background:#fff3cd;color:#856404}.btn-edit:hover{background:#ffc107;color:#fff}
+    .btn-del{background:#f8d7da;color:#721c24}.btn-del:hover{background:#c8102e;color:#fff}
+    .trash-item{background:#fff;border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);opacity:.8;margin-bottom:10px}
+    .trash-img{width:52px;height:66px;object-fit:cover;border-radius:10px}
+    .toast-msg{position:fixed;bottom:28px;right:28px;z-index:99999;border-radius:14px;padding:12px 20px;font-size:13px;font-weight:600;display:flex;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.15);transition:all .3s;opacity:0;pointer-events:none}
+    .toast-msg.show{opacity:1}.toast-ok{background:#28a745;color:#fff}.toast-err{background:#c8102e;color:#fff}
+    .field-error{font-size:11px;color:#c8102e;margin-top:4px;display:none}
+    .form-control.is-invalid,.form-select.is-invalid{border-color:#c8102e;box-shadow:0 0 0 2px rgba(200,16,46,.15)}
+    .form-control.is-valid,.form-select.is-valid{border-color:#28a745}
+  </style>
+</head><body>
+<div class="admin-layout">
+  <div class="admin-sidebar">
+    <div class="sidebar-brand">Admin</div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+      <a href="/admin/staff.html" class="sidebar-link"><i class="bi bi-people me-2"></i>Nhân viên</a>
+      <a href="/admin/customers.html" class="sidebar-link"><i class="bi bi-person-lines-fill me-2"></i>Khách hàng</a>
+      <a href="/admin/orders.html" class="sidebar-link"><i class="bi bi-bag-check me-2"></i>Hóa đơn</a>
+      <a href="/admin/products.html" class="sidebar-link active"><i class="bi bi-box me-2"></i>Sản phẩm</a>
+      <a href="/admin/sales.html" class="sidebar-link"><i class="bi bi-graph-up me-2"></i>Doanh thu</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="font-size:12px;color:rgba(255,255,255,.5)">Đăng nhập với tư cách</div>
+      <div style="font-weight:700;color:#fff;font-size:14px" id="adminName">Admin</div>
+      <button class="btn btn-sm btn-outline-light mt-2 w-100" onclick="doLogout()"><i class="bi bi-box-arrow-right me-1"></i>Đăng xuất</button>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h3 style="color:#c8102e;font-weight:800;margin:0">Quản lý sản phẩm</h3>
+        <p class="text-muted small mb-0" id="subTitle">0 sản phẩm</p>
+      </div>
+      <button class="btn btn-danger" onclick="openAdd()"><i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm</button>
+    </div>
+    <div class="d-flex gap-2 mb-3 flex-wrap">
+      <button class="btn btn-sm btn-outline-secondary" id="tabList" onclick="setTab('list')">Danh sách</button>
+      <button class="btn btn-sm btn-outline-secondary" id="tabTrash" onclick="setTab('trash')">🗑 Thùng rác <span id="trashBadge" class="badge bg-danger d-none"></span></button>
+      <input id="searchInput" class="form-control form-control-sm ms-auto" placeholder="Tìm sản phẩm..." style="width:200px" oninput="filterProducts()"/>
+      <select id="catFilter" class="form-select form-select-sm" style="width:140px" onchange="filterProducts()">
+        <option value="">Tất cả danh mục</option><option value="Nam">Áo dài Nam</option><option value="Nữ">Áo dài Nữ</option>
+      </select>
+    </div>
+
+    <div class="form-card d-none" id="productForm">
+      <div class="d-flex justify-content-between mb-3">
+        <h6 class="fw-bold mb-0" id="formTitle">Thêm sản phẩm</h6>
+        <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="cancelForm()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="row g-3">
+        <div class="col-12"><label class="form-label small fw-bold">Tên sản phẩm *</label><input id="fName" class="form-control" oninput="clearErr('fName')"/><div class="field-error" id="err-fName">Vui lòng nhập tên sản phẩm</div></div>
+        <div class="col-6"><label class="form-label small fw-bold" id="lblPrice">Giá bán (đ) *</label><input id="fPrice" type="number" class="form-control" min="0" max="10000000" oninput="clearErr('fPrice')"/><div class="form-text text-muted small">Tối đa 10.000.000 đ</div><div class="field-error" id="err-fPrice">Vui lòng nhập giá hợp lệ (0 – 10.000.000 đ)</div></div>
+        <div class="col-6"><label class="form-label small fw-bold">Tồn kho *</label><input id="fStock" type="number" class="form-control" min="0" oninput="clearErr('fStock')"/><div class="field-error" id="err-fStock">Tồn kho phải là số nguyên ≥ 0</div></div>
+        <div class="col-6"><label class="form-label small fw-bold">Danh mục *</label>
+          <select id="fCategory" class="form-select" onchange="clearErr('fCategory')"><option value="">-- Chọn danh mục --</option><option value="Nam">Áo dài Nam</option><option value="Nữ">Áo dài Nữ</option></select><div class="field-error" id="err-fCategory">Vui lòng chọn danh mục</div></div>
+        <div class="col-6"><label class="form-label small fw-bold">Trạng thái</label>
+          <select id="fStatus" class="form-select"><option value="Đang bán">Đang bán</option><option value="Sắp hết">Sắp hết</option><option value="Ngừng bán">Ngừng bán</option></select></div>
+        <div class="col-12"><label class="form-label small fw-bold">Ảnh sản phẩm *</label>
+          <input id="fImageFile" type="file" accept="image/*" class="form-control" onchange="previewImgFile(this);clearErr('fImageFile')"/>
+          <img id="imgPreview" src="" class="mt-2 d-none" style="width:80px;height:100px;object-fit:cover;border-radius:8px"/>
+          <div class="field-error" id="err-fImageFile">Vui lòng chọn ảnh sản phẩm</div><input id="fImage" type="hidden" value=""/></div>
+        <div class="col-12"><label class="form-label small fw-bold">Mô tả *</label><textarea id="fDesc" class="form-control" rows="3" oninput="clearErr('fDesc')"></textarea><div class="field-error" id="err-fDesc">Vui lòng nhập mô tả sản phẩm</div></div>
+      </div>
+      <div class="d-flex gap-2 mt-3 justify-content-end">
+        <button class="btn btn-outline-secondary" onclick="cancelForm()">Hủy</button>
+        <button class="btn btn-danger" onclick="saveProduct()">💾 Lưu sản phẩm</button>
+      </div>
+    </div>
+
+    <div id="listSection">
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+            <tr>
+              <th style="width:60px">Ảnh</th>
+              <th>Tên sản phẩm</th>
+              <th>Danh mục</th>
+              <th>Giá bán</th>
+              <th>Tồn kho</th>
+              <th>Trạng thái</th>
+              <th style="width:90px;text-align:center">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody id="productTableBody">
+            <tr><td colspan="7" class="text-center text-muted py-5">Đang tải...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="trashSection" class="d-none">
+      <h6 class="text-muted mb-3">Thùng rác (<span id="trashCount">0</span>)</h6>
+      <div id="trashGrid"></div>
+    </div>
+  </div>
+</div>
+<div class="toast-msg" id="toastEl"></div>
+<script src="/shop-api.js"></script>
+<script>
+  const sess = session.get('adminSession');
+  if (!sess) location.href = '/admin/login.html';
+  document.getElementById('adminName').textContent = sess?.name || 'Admin';
+  let products = [], deletedProducts = [], isEdit = false, editId = null, activeTab = 'list';
+
+  async function loadProducts() {
+    try {
+      const all = await api.products.getAllAdmin();
+      deletedProducts = all.filter(p => p.deleted);
+      products = all.filter(p => !p.deleted);
+      document.getElementById('subTitle').textContent = products.length + ' sản phẩm trong kho';
+      const tb = document.getElementById('trashBadge');
+      if (deletedProducts.length > 0) { tb.textContent = deletedProducts.length; tb.classList.remove('d-none'); }
+      else tb.classList.add('d-none');
+      filterProducts(); renderTrash();
+    } catch(e) { console.error(e); }
+  }
+
+  function setTab(tab) {
+    activeTab = tab;
+    document.getElementById('listSection').classList.toggle('d-none', tab !== 'list');
+    document.getElementById('trashSection').classList.toggle('d-none', tab !== 'trash');
+    document.getElementById('tabList').className = tab === 'list' ? 'btn btn-sm btn-danger' : 'btn btn-sm btn-outline-secondary';
+    document.getElementById('tabTrash').className = tab === 'trash' ? 'btn btn-sm btn-danger' : 'btn btn-sm btn-outline-secondary';
+    document.getElementById('productForm').classList.add('d-none');
+  }
+
+  function getDisplayStatus(p) {
+    if (p.status === 'Ngừng bán') return 'Ngừng bán';
+    if (Number(p.stock) <= 10) return 'Sắp hết';
+    return p.status || 'Đang bán';
+  }
+
+  function bc(s) {
+    if (s === 'Ngừng bán') return 'badge-red';
+    if (s === 'Sắp hết') return 'badge-yellow';
+    return 'badge-green';
+  }
+
+  function filterProducts() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const cat = document.getElementById('catFilter').value;
+    let list = products.filter(p => (!q || p.name.toLowerCase().includes(q)) && (!cat || p.category === cat));
+    const tbody = document.getElementById('productTableBody');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-5">Không tìm thấy sản phẩm</td></tr>'; return; }
+    tbody.innerHTML = list.map(p => {
+      const ds = getDisplayStatus(p);
+      return `<tr>
+        <td><img src="${p.image||'https://via.placeholder.com/44x56'}" class="prod-thumb" onerror="this.src='https://via.placeholder.com/44x56'"/></td>
+        <td><div class="fw-bold" style="font-size:13px">${p.name}</div><div class="text-muted" style="font-size:11px">#${p.id}</div></td>
+        <td>${p.category||'—'}</td>
+        <td class="fw-bold" style="color:#c8102e">${fp(p.price)}</td>
+        <td>${p.stock||0}</td>
+        <td><span class="status-badge ${bc(ds)}">${ds}</span></td>
+        <td>
+          <div style="display:flex;gap:6px;align-items:center;justify-content:center">
+            <button class="btn-action btn-edit" onclick='editProduct(${JSON.stringify(p).replace(/'/g,"&apos;")})' title="Sửa"><i class="bi bi-pencil-fill"></i></button>
+            <button class="btn-action btn-del" onclick="softDelete(${p.id})" title="Xóa"><i class="bi bi-trash-fill"></i></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderTrash() {
+    document.getElementById('trashCount').textContent = deletedProducts.length;
+    document.getElementById('trashGrid').innerHTML = deletedProducts.length === 0
+            ? '<p class="text-muted text-center py-4">Thùng rác trống</p>'
+            : deletedProducts.map(p => `<div class="trash-item">
+          <img src="${p.image||'https://via.placeholder.com/52x66'}" class="trash-img" onerror="this.src='https://via.placeholder.com/52x66'"/>
+          <div><div class="fw-bold">${p.name}</div><div class="text-muted small">${fp(p.price)}</div></div>
+          <button class="btn btn-sm btn-outline-success ms-auto" onclick="restoreProduct(${p.id})"><i class="bi bi-arrow-counterclockwise me-1"></i>Khôi phục</button>
+        </div>`).join('');
+  }
+
+  function openAdd() {
+    isEdit = false; editId = null; resetForm();
+    document.getElementById('formTitle').textContent = '➕ Thêm sản phẩm mới';
+    document.getElementById('lblPrice').textContent = 'Giá bán (đ) *';
+    document.getElementById('fPrice').disabled = false;
+    document.getElementById('productForm').classList.remove('d-none');
+    document.getElementById('productForm').scrollIntoView({behavior:'smooth'});
+  }
+
+  function editProduct(p) {
+    isEdit = true; editId = p.id; resetForm();
+    document.getElementById('formTitle').textContent = '✏️ Chỉnh sửa sản phẩm';
+    document.getElementById('fName').value = p.name||'';
+    document.getElementById('fPrice').value = p.price||''; document.getElementById('fPrice').disabled = false;
+    document.getElementById('lblPrice').textContent = 'Giá bán (đ) *';
+    document.getElementById('fStock').value = p.stock||'';
+    document.getElementById('fCategory').value = p.category||''; document.getElementById('fStatus').value = p.status||'Đang bán';
+    document.getElementById('fImage').value = p.image||''; document.getElementById('fImageFile').value = '';
+    document.getElementById('fDesc').value = p.description||'';
+    if (p.image) { const pr = document.getElementById('imgPreview'); pr.src = p.image; pr.classList.remove('d-none'); }
+    document.getElementById('productForm').classList.remove('d-none');
+    document.getElementById('productForm').scrollIntoView({behavior:'smooth'});
+  }
+
+  function previewImgFile(input) {
+    const pr = document.getElementById('imgPreview');
+    const file = input.files[0];
+    if (!file) { pr.classList.add('d-none'); document.getElementById('fImage').value=''; return; }
+    const reader = new FileReader();
+    reader.onload = function(e) { document.getElementById('fImage').value = e.target.result; pr.src = e.target.result; pr.classList.remove('d-none'); };
+    reader.readAsDataURL(file);
+  }
+
+  function resetForm() {
+    clearAllErrors();
+    ['fName','fPrice','fStock','fDesc'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('fImage').value=''; document.getElementById('fImageFile').value='';
+    document.getElementById('fCategory').value=''; document.getElementById('fStatus').value='Đang bán';
+    document.getElementById('imgPreview').classList.add('d-none');
+  }
+  function cancelForm() { document.getElementById('productForm').classList.add('d-none'); }
+
+  function showErr(id, msg) {
+    const el = document.getElementById('err-' + id);
+    const inp = document.getElementById(id);
+    if (el) { if (msg) el.textContent = msg; el.style.display = 'block'; }
+    if (inp) inp.classList.add('is-invalid');
+  }
+  function clearErr(id) {
+    const el = document.getElementById('err-' + id);
+    const inp = document.getElementById(id);
+    if (el) el.style.display = 'none';
+    if (inp) { inp.classList.remove('is-invalid'); inp.classList.add('is-valid'); }
+  }
+  function clearAllErrors() {
+    document.querySelectorAll('.field-error').forEach(e => e.style.display = 'none');
+    document.querySelectorAll('.is-invalid,.is-valid').forEach(e => { e.classList.remove('is-invalid','is-valid'); });
+  }
+
+  async function saveProduct() {
+    clearAllErrors();
+    const name = document.getElementById('fName').value.trim();
+    const price = document.getElementById('fPrice').value;
+    const stock = document.getElementById('fStock').value;
+    const category = document.getElementById('fCategory').value;
+    const image = document.getElementById('fImage').value.trim();
+    const desc = document.getElementById('fDesc').value.trim();
+    let valid = true;
+
+    if (!name) { showErr('fName'); valid = false; }
+    if (!isEdit) {
+      if (!price || isNaN(Number(price)) || Number(price) < 0) { showErr('fPrice', 'Vui lòng nhập giá hợp lệ (≥ 0 đ)'); valid = false; }
+      else if (Number(price) > 10000000) { showErr('fPrice', 'Giá bán không được vượt quá 10.000.000 đ'); valid = false; }
+    }
+    if (stock === '' || isNaN(Number(stock)) || Number(stock) < 0 || !Number.isInteger(Number(stock))) { showErr('fStock', 'Tồn kho phải là số nguyên ≥ 0'); valid = false; }
+    if (!category) { showErr('fCategory'); valid = false; }
+    if (!image) { showErr('fImageFile', 'Vui lòng chọn ảnh sản phẩm'); valid = false; }
+    if (!desc) { showErr('fDesc'); valid = false; }
+    if (!valid) return;
+
+    let autoStatus = document.getElementById('fStatus').value;
+    if (autoStatus !== 'Ngừng bán') {
+      if (Number(stock) <= 10) autoStatus = 'Sắp hết';
+      else if (autoStatus === 'Sắp hết') autoStatus = 'Đang bán';
+    }
+    const data = { name, stock: Number(stock), category,
+      status: autoStatus, image, description: desc, price: Number(price) };
+    try {
+      if (isEdit) await api.products.update(editId, data); else await api.products.create(data);
+      cancelForm(); loadProducts(); showToast(isEdit?'Đã cập nhật sản phẩm':'Đã thêm sản phẩm mới','ok');
+    } catch(e) { alert(e.message); }
+  }
+
+  async function softDelete(id) {
+    if (!confirm('Xóa sản phẩm này vào thùng rác?')) return;
+    try { await api.products.delete(id); loadProducts(); showToast('Đã xóa sản phẩm','err'); }
+    catch(e) { alert(e.message); }
+  }
+
+  async function restoreProduct(id) {
+    try { await api.products.restore(id); loadProducts(); showToast('Đã khôi phục sản phẩm','ok'); }
+    catch(e) { alert(e.message); }
+  }
+
+  function showToast(msg,type) {
+    const el = document.getElementById('toastEl');
+    el.className = `toast-msg show toast-${type}`;
+    el.innerHTML = `<i class="bi bi-${type==='ok'?'check-circle-fill':'trash-fill'} me-2"></i>${msg}`;
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+  function fp(p){return Number(p).toLocaleString('vi-VN')+' đ';}
+  function doLogout(){if(confirm('Bạn có chắc muốn đăng xuất?')){session.remove('adminSession');location.href='/admin/login.html';}}
+  loadProducts(); setTab('list');
+</script>
+</body></html>

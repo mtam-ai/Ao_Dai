@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Theo dõi đơn hàng – Áo Dài Thanh Xuân</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <style>
+    body{margin:0;font-family:"Montserrat",sans-serif;background:linear-gradient(160deg,#fff8f5,#ffeaea,#fff5f5);min-height:100vh}
+    .tracking-nav{background:#fff;border-bottom:1px solid #f0e8e8;padding:14px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(200,16,46,.07)}
+    .brand-logo{font-size:22px;font-weight:900;color:#c8102e;cursor:pointer}
+    .tracking-body{padding:32px 0 60px}
+    .tracking-grid{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:flex-start}
+    .status-hero{display:flex;align-items:center;gap:16px;padding:20px 24px;border-radius:18px;margin-bottom:20px}
+    .hero-pending{background:linear-gradient(135deg,#fff3cd,#ffeaa7)}.hero-confirmed{background:linear-gradient(135deg,#d1ecf1,#bee5eb)}
+    .hero-shipping{background:linear-gradient(135deg,#e2d9f3,#d1c4e9)}.hero-done{background:linear-gradient(135deg,#d4edda,#c3e6cb)}
+    .hero-cancelled{background:linear-gradient(135deg,#f8d7da,#f5c2c7)}
+    .hero-awaiting{background:linear-gradient(135deg,#fff3cd,#ffe082)}
+    .hero-icon{font-size:40px;flex-shrink:0}
+    .timeline-card{background:#fff;border-radius:18px;padding:22px 24px;margin-bottom:20px;box-shadow:0 4px 16px rgba(200,16,46,.07)}
+    .timeline-step{display:flex;gap:0;position:relative;padding-bottom:20px}
+    .timeline-step:last-child{padding-bottom:0}
+    .step-connector{position:absolute;left:16px;top:-20px;width:2px;height:20px;background:#e0e0e0;z-index:0}
+    .connector-done{background:#28a745}
+    .step-dot-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;z-index:1;width:32px}
+    .step-dot{width:32px;height:32px;border-radius:50%;border:2px solid #e0e0e0;background:#f5f5f5;color:#bbb;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.3s}
+    .step-done .step-dot{border-color:#28a745;background:#28a745;color:#fff}
+    .step-active .step-dot{border-color:#c8102e;background:#c8102e;color:#fff;box-shadow:0 0 0 4px rgba(200,16,46,.15)}
+    .step-content{margin-left:14px;padding-top:4px;flex:1}
+    .step-title{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:2px}
+    .step-pending .step-title{color:#aaa}
+    .step-desc{font-size:12px;color:#888}
+    .info-card{background:#fff;border-radius:18px;padding:22px 24px;margin-bottom:20px;box-shadow:0 4px 16px rgba(200,16,46,.07)}
+    .summary-card{background:#fff;border-radius:18px;padding:22px 24px;box-shadow:0 8px 32px rgba(200,16,46,.1)}
+    .prod-thumb{width:52px;height:66px;object-fit:cover;border-radius:10px;border:2px solid #f5f5f5;flex-shrink:0;background:#f5f0f0}
+    .prod-price{font-size:13px;font-weight:800;color:#c8102e;flex-shrink:0}
+    .total-price{font-size:20px;font-weight:900;color:#c8102e}
+    .notfound-box{background:#fff;border-radius:24px;padding:60px 40px;max-width:500px;margin:0 auto;box-shadow:0 15px 50px rgba(200,16,46,.1)}
+
+    /* ── QR Payment Block ── */
+    .qr-payment-card{background:#fff;border-radius:18px;padding:24px;margin-bottom:20px;box-shadow:0 4px 20px rgba(200,16,46,.12);border:2px solid #ffe082}
+    .qr-payment-card .qr-title{font-size:16px;font-weight:800;color:#c8102e;margin-bottom:4px}
+    .qr-payment-card .qr-subtitle{font-size:12px;color:#888;margin-bottom:18px}
+    .qr-img-wrap{text-align:center;margin-bottom:16px}
+    .qr-img-wrap img{width:200px;height:200px;object-fit:contain;border-radius:14px;border:3px solid #f1f1f1}
+    .qr-bank-row{background:#f8f9fa;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:8px}
+    .qr-bank-row .label{color:#888;font-size:11px;margin-bottom:1px}
+    .qr-bank-row .value{font-weight:700;color:#212529}
+    .qr-amount-row{background:#fff3cd;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:8px;border:1px solid #ffe082}
+    .qr-amount-row .label{color:#888;font-size:11px;margin-bottom:1px}
+    .qr-amount-row .value{font-weight:800;color:#c8102e;font-size:18px}
+    .qr-code-row{background:#f8f9fa;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .qr-code-row .label{color:#888;font-size:11px;margin-bottom:1px}
+    .qr-code-row .value{font-weight:800;color:#c8102e;font-size:15px;letter-spacing:1px}
+    .btn-copy{background:none;border:1px solid #dee2e6;border-radius:8px;padding:4px 10px;font-size:11px;color:#555;cursor:pointer;transition:.2s}
+    .btn-copy:hover{background:#f5f5f5}
+    .btn-copy.copied{border-color:#28a745;color:#28a745}
+    .qr-status-waiting{background:#fff3cd;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;color:#664d03;display:flex;align-items:center;gap:8px}
+    .qr-status-success{background:#d1e7dd;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:700;color:#0a3622;display:flex;align-items:center;gap:8px}
+    .pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffc107;animation:pulse 1.2s infinite;flex-shrink:0}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+    .qr-timer{font-size:11px;color:#888;margin-top:6px;text-align:center}
+    .qr-note{font-size:11px;color:#aaa;margin-top:12px;line-height:1.6;border-top:1px solid #f0f0f0;padding-top:10px}
+
+    @media(max-width:900px){.tracking-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<nav class="tracking-nav">
+  <div class="container d-flex align-items-center justify-content-between">
+    <span class="brand-logo" onclick="location.href='/client/home.html'">Áo Dài Thanh Xuân</span>
+    <div class="d-flex align-items-center gap-1">
+      <span style="font-size:13px;color:#c8102e;cursor:pointer" onclick="location.href='/client/home.html'">Trang chủ</span>
+      <i class="bi bi-chevron-right" style="font-size:11px;color:#ccc;margin:0 4px"></i>
+      <span style="font-size:13px;color:#c8102e;cursor:pointer" onclick="location.href='/client/order-history.html'">Đơn hàng</span>
+      <i class="bi bi-chevron-right" style="font-size:11px;color:#ccc;margin:0 4px"></i>
+      <span style="font-size:13px;color:#888;font-weight:600">Theo dõi đơn</span>
+    </div>
+    <div id="userTag"></div>
+  </div>
+</nav>
+
+<div id="notFoundBox" class="container my-5 d-none">
+  <div class="notfound-box text-center">
+    <div style="font-size:60px">🔍</div>
+    <h4 class="fw-bold mt-3">Không tìm thấy đơn hàng</h4>
+    <button class="btn btn-danger px-4 rounded-pill mt-3" onclick="location.href='/client/order-history.html'">Xem lịch sử đơn hàng</button>
+  </div>
+</div>
+
+<div id="mainContent" class="container tracking-body d-none">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <button class="btn btn-outline-danger rounded-pill btn-sm" onclick="location.href='/client/order-history.html'"><i class="bi bi-arrow-left me-2"></i>Quay lại</button>
+    <div class="text-end"><div style="font-size:11px;color:#aaa">Mã đơn hàng</div><div style="font-size:20px;font-weight:900;color:#c8102e;font-family:monospace" id="orderRef">#------</div></div>
+  </div>
+  <div class="tracking-grid">
+    <div>
+      <!-- Status hero -->
+      <div class="status-hero" id="statusHero">
+        <div class="hero-icon" id="heroIcon">⏳</div>
+        <div>
+          <div style="font-size:17px;font-weight:800;color:#1a1a1a;margin-bottom:4px" id="heroStatus">Chờ xác nhận</div>
+          <div style="font-size:13px;color:#555" id="heroMsg"></div>
+        </div>
+        <div style="font-size:12px;color:#888;margin-left:auto;white-space:nowrap" id="heroDate"></div>
+      </div>
+
+      <!-- QR Payment Block — chỉ hiện khi status = awaiting_payment -->
+      <div class="qr-payment-card d-none" id="qrPaymentBlock">
+        <div class="qr-title">💳 Thanh toán chuyển khoản</div>
+        <div class="qr-subtitle">Quét mã QR hoặc chuyển khoản theo thông tin dưới đây. Đơn hàng sẽ tự động xác nhận ngay sau khi nhận được tiền.</div>
+        <div class="qr-img-wrap">
+          <img id="qrImage" src="" alt="QR Chuyển khoản"/>
+        </div>
+        <div class="qr-bank-row">
+          <div class="label">Ngân hàng</div>
+          <div class="value">Techcombank (TCB)</div>
+        </div>
+        <div class="qr-bank-row">
+          <div class="label">Số tài khoản</div>
+          <div class="value">4404122008 – TRAN QUOC THAI</div>
+        </div>
+        <div class="qr-amount-row">
+          <div class="label">Số tiền cần chuyển</div>
+          <div class="value" id="qrAmount">—</div>
+        </div>
+        <div class="qr-code-row">
+          <div>
+            <div class="label">Nội dung chuyển khoản (BẮT BUỘC)</div>
+            <div class="value" id="qrCode">—</div>
+          </div>
+          <button class="btn-copy" id="btnCopy" onclick="copyCode()"><i class="bi bi-clipboard me-1"></i>Sao chép</button>
+        </div>
+        <!-- Trạng thái polling -->
+        <div id="qrStatusWaiting" class="qr-status-waiting">
+          <span class="pulse-dot"></span>
+          <span>Đang chờ xác nhận thanh toán...</span>
+        </div>
+        <div id="qrStatusSuccess" class="qr-status-success d-none">
+          <span>✅</span>
+          <span>Thanh toán thành công! Đơn hàng đang được xử lý...</span>
+        </div>
+        <div class="qr-timer" id="qrTimer"></div>
+        <div class="qr-note">
+          ⚠️ Vui lòng nhập <strong>đúng nội dung chuyển khoản</strong> để hệ thống tự động xác nhận.<br/>
+          Nếu đã chuyển nhưng chưa được xác nhận sau 5 phút, vui lòng liên hệ hỗ trợ.
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline-card">
+        <h6 class="fw-bold mb-3"><i class="bi bi-signpost-split me-2 text-danger"></i>Tiến trình đơn hàng</h6>
+        <div id="timeline"></div>
+        <div class="d-none" id="cancelledBlock">
+          <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:#fff8f8">
+            <span style="font-size:32px">❌</span>
+            <div><strong>Đơn hàng đã bị hủy</strong><p class="text-muted small mb-0">Nếu cần hỗ trợ, vui lòng liên hệ chúng tôi</p></div>
+            <button class="btn btn-sm btn-outline-danger ms-auto rounded-pill" onclick="location.href='/client/support.html'">Liên hệ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery info -->
+      <div class="info-card">
+        <h6 class="fw-bold mb-3"><i class="bi bi-geo-alt me-2 text-danger"></i>Thông tin giao hàng</h6>
+        <div class="row g-2 small">
+          <div class="col-4 text-muted fw-semibold">Người nhận</div><div class="col-8 fw-semibold" id="infoName">—</div>
+          <div class="col-4 text-muted fw-semibold">Điện thoại</div><div class="col-8 fw-semibold" id="infoPhone">—</div>
+          <div class="col-4 text-muted fw-semibold">Địa chỉ</div><div class="col-8 fw-semibold" id="infoAddress">—</div>
+          <div class="col-4 text-muted fw-semibold">Thanh toán</div><div class="col-8 fw-semibold" id="infoPayment">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Product summary -->
+    <div style="position:sticky;top:80px">
+      <div class="summary-card">
+        <div style="font-size:16px;font-weight:800;margin-bottom:16px">🛍 Sản phẩm đã đặt</div>
+        <div id="productList"></div>
+        <hr/>
+        <div class="d-flex justify-content-between mb-2 small text-muted"><span>Tạm tính</span><span id="subtotal">—</span></div>
+        <div class="d-flex justify-content-between mb-2 small text-muted"><span>Phí vận chuyển</span><span>30.000 đ</span></div>
+        <hr/>
+        <div class="d-flex justify-content-between align-items-center fw-bold"><span>Tổng cộng</span><span class="total-price" id="totalPrice">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/shop-api.js"></script>
+<script>
+  // ── Constants ────────────────────────────────────────────
+  const STATUS_ORDER = ['pending','confirmed','shipping','done'];
+  const STEPS = [
+    {key:'pending',   label:'Đặt hàng thành công',   desc:'Đơn hàng đã được tiếp nhận và đang chờ xác nhận'},
+    {key:'confirmed', label:'Đã xác nhận',            desc:'Cửa hàng đã xác nhận đơn và đang chuẩn bị hàng'},
+    {key:'shipping',  label:'Đang vận chuyển',        desc:'Hàng đã được giao cho đơn vị vận chuyển'},
+    {key:'done',      label:'Giao hàng thành công',   desc:'Bạn đã nhận được hàng. Cảm ơn bạn đã mua sắm!'},
+  ];
+  const HERO_ICONS   = {awaiting_payment:'💳',pending:'⏳',confirmed:'✅',shipping:'🚚',done:'🎉',cancelled:'❌'};
+  const HERO_MSGS    = {
+    awaiting_payment:'Vui lòng hoàn tất thanh toán chuyển khoản để đơn được xử lý.',
+    pending:  'Đơn hàng của bạn đang chờ cửa hàng xác nhận.',
+    confirmed:'Cửa hàng đã xác nhận và đang chuẩn bị hàng cho bạn.',
+    shipping: 'Đơn hàng đang trên đường đến với bạn.',
+    done:     'Đơn hàng đã được giao thành công. Cảm ơn bạn! 🌸',
+    cancelled:'Đơn hàng đã bị hủy. Vui lòng liên hệ nếu cần hỗ trợ.',
+  };
+  const HERO_CLASSES = {awaiting_payment:'hero-awaiting',pending:'hero-pending',confirmed:'hero-confirmed',shipping:'hero-shipping',done:'hero-done',cancelled:'hero-cancelled'};
+  const STATUS_LABELS= {awaiting_payment:'Chờ thanh toán',pending:'Chờ xác nhận',confirmed:'Đã xác nhận',shipping:'Đang giao hàng',done:'Hoàn thành',cancelled:'Đã hủy'};
+
+  const POLL_MS   = 3000;   // poll mỗi 3 giây
+  const TIMEOUT_S = 900;    // 15 phút
+
+  let productImageMap = {};
+
+  async function loadProductImages() {
+    try {
+      const products = await api.products.getAll();
+      products.forEach(p => { if (p.id && p.image) productImageMap[p.id] = p.image; });
+    } catch(_) {}
+  }
+
+  function getItemImage(item) {
+    if (item.image && item.image.trim() !== '') return item.image;
+    if (item.id && productImageMap[item.id]) return productImageMap[item.id];
+    return '';
+  }
+
+  let pollingInterval = null;
+  let timerInterval   = null;
+  let remainSec       = TIMEOUT_S;
+  let currentOrderId  = null;
+
+  // ── Helpers ──────────────────────────────────────────────
+  function fp(p){return Number(p||0).toLocaleString('vi-VN')+' đ';}
+
+  function getOrderId() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('id')) return Number(params.get('id'));
+    const parts = location.pathname.split('/');
+    return Number(parts[parts.length-1]);
+  }
+
+  function copyCode() {
+    const code = document.getElementById('qrCode').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = document.getElementById('btnCopy');
+      btn.classList.add('copied');
+      btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Đã sao chép';
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>Sao chép'; }, 2000);
+    });
+  }
+
+  // ── QR / Polling ─────────────────────────────────────────
+  function showQRBlock(order) {
+    const code    = order.transferCode || ('AODAI' + order.id);
+    const total   = order.total;
+    const content = encodeURIComponent(code);
+    const qrUrl   = `https://img.vietqr.io/image/TCB-4404122008-compact2.png?amount=${total}&addInfo=${content}&accountName=TRAN+QUOC+THAI`;
+
+    document.getElementById('qrImage').src = qrUrl;
+    document.getElementById('qrAmount').textContent = fp(total);
+    document.getElementById('qrCode').textContent   = code;
+
+    document.getElementById('qrPaymentBlock').classList.remove('d-none');
+    document.getElementById('qrStatusWaiting').classList.remove('d-none');
+    document.getElementById('qrStatusSuccess').classList.add('d-none');
+
+    remainSec = TIMEOUT_S;
+    startPolling(order.id);
+    startTimer();
+  }
+
+  function hideQRBlock() {
+    document.getElementById('qrPaymentBlock').classList.add('d-none');
+    stopPolling();
+    stopTimer();
+  }
+
+  function startPolling(orderId) {
+    stopPolling();
+    pollingInterval = setInterval(async () => {
+      try {
+        // Lấy thông tin đơn mới nhất
+        let fresh = null;
+        try {
+          const orders = await api.orders.getMyOrders();
+          fresh = orders.find(o => o.id === orderId);
+        } catch(_) {}
+        if (!fresh) {
+          try { fresh = await api.orders.getById(orderId); } catch(_) {}
+        }
+        if (!fresh) return;
+
+        // Đã thanh toán → cập nhật UI
+        if (fresh.paymentStatus === 'paid' || fresh.status === 'pending' || fresh.status === 'confirmed') {
+          stopPolling();
+          stopTimer();
+          // Cập nhật cache
+          try { localStorage.setItem('orderCache_' + orderId, JSON.stringify(fresh)); } catch(_) {}
+          // Hiện thông báo thành công rồi re-render trang
+          document.getElementById('qrStatusWaiting').classList.add('d-none');
+          document.getElementById('qrStatusSuccess').classList.remove('d-none');
+          setTimeout(() => {
+            hideQRBlock();
+            renderOrder(fresh);
+          }, 2500);
+        }
+      } catch(e) { /* bỏ qua lỗi mạng tạm thời */ }
+    }, POLL_MS);
+  }
+
+  function startTimer() {
+    stopTimer();
+    timerInterval = setInterval(() => {
+      remainSec--;
+      const m = Math.floor(remainSec / 60);
+      const s = remainSec % 60;
+      const el = document.getElementById('qrTimer');
+      if (el) el.textContent = `Thời gian còn lại: ${m}:${s.toString().padStart(2,'0')}`;
+      if (remainSec <= 0) { stopTimer(); }
+    }, 1000);
+  }
+
+  function stopPolling() { if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } }
+  function stopTimer()   { if (timerInterval)   { clearInterval(timerInterval);   timerInterval   = null; } }
+
+  // ── Render ───────────────────────────────────────────────
+  function renderOrder(o) {
+    document.getElementById('mainContent').classList.remove('d-none');
+    document.getElementById('orderRef').textContent = '#' + String(o.id).slice(-6);
+
+    // Hero
+    const hero = document.getElementById('statusHero');
+    hero.className = 'status-hero ' + (HERO_CLASSES[o.status] || 'hero-pending');
+    document.getElementById('heroIcon').textContent   = HERO_ICONS[o.status]   || '⏳';
+    document.getElementById('heroStatus').textContent = STATUS_LABELS[o.status] || o.status;
+    document.getElementById('heroMsg').textContent    = HERO_MSGS[o.status]    || '';
+    document.getElementById('heroDate').innerHTML     = '<i class="bi bi-clock me-1"></i>' + (o.orderDate ? new Date(o.orderDate).toLocaleString('vi-VN') : '');
+
+    // QR block: chỉ hiện khi awaiting_payment
+    if (o.status === 'awaiting_payment') {
+      // Nếu polling chưa chạy (tức là lần đầu render trang này), khởi động
+      if (!pollingInterval) {
+        showQRBlock(o);
+      }
+    } else {
+      hideQRBlock();
+    }
+
+    // Timeline
+    if (o.status === 'cancelled') {
+      document.getElementById('cancelledBlock').classList.remove('d-none');
+      document.getElementById('timeline').innerHTML = '';
+    } else {
+      document.getElementById('cancelledBlock').classList.add('d-none');
+      const displayStatus = o.status === 'awaiting_payment' ? 'pending' : o.status;
+      const currentIdx = STATUS_ORDER.indexOf(displayStatus);
+      document.getElementById('timeline').innerHTML = STEPS.map((step, idx) => {
+        const stepIdx = STATUS_ORDER.indexOf(step.key);
+        let cls = 'step-pending';
+        if (stepIdx < currentIdx) cls = 'step-done';
+        else if (stepIdx === currentIdx) cls = 'step-active';
+        // Nếu awaiting_payment thì bước đầu chưa active
+        if (o.status === 'awaiting_payment') cls = 'step-pending';
+        const connector = idx > 0 ? `<div class="step-connector${stepIdx <= currentIdx && stepIdx !== 0 && o.status !== 'awaiting_payment' ? ' connector-done' : ''}"></div>` : '';
+        const dotIcon = cls === 'step-done' ? '<i class="bi bi-check-lg"></i>' : cls === 'step-active' ? '<i class="bi bi-circle-fill"></i>' : '<i class="bi bi-circle"></i>';
+        return `<div class="timeline-step ${cls}">
+          ${connector}
+          <div class="step-dot-wrap"><div class="step-dot">${dotIcon}</div></div>
+          <div class="step-content">
+            <div class="step-title">${step.label}</div>
+            <div class="step-desc">${step.desc}</div>
+            ${cls !== 'step-pending' ? `<div style="font-size:11px;color:${cls === 'step-active' ? '#c8102e' : '#28a745'};font-weight:600;margin-top:4px">${cls === 'step-active' ? 'Đang xử lý' : 'Đã hoàn thành'}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Delivery info
+    document.getElementById('infoName').textContent    = o.customerName || '—';
+    document.getElementById('infoPhone').textContent   = o.phone        || '—';
+    document.getElementById('infoAddress').textContent = o.address      || '—';
+    document.getElementById('infoPayment').textContent = o.payment === 'bank' ? '🏦 Chuyển khoản' : '💵 COD';
+
+    // Products
+    let items = []; try { items = JSON.parse(o.items || '[]'); } catch {}
+    document.getElementById('productList').innerHTML = items.map(item => `<div class="d-flex align-items-center gap-2 py-2 border-bottom">
+      <img src="${getItemImage(item)}" class="prod-thumb" onerror="this.src='';this.onerror=null;"/>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">${item.name}</div><div style="font-size:11px;color:#aaa">x${item.qty}${item.size ? ' | Size ' + item.size : ''}</div></div>
+      <div class="prod-price">${fp(item.price * item.qty)}</div>
+    </div>`).join('');
+
+    const subtotal = items.reduce((s, i) => s + Number(i.price) * Number(i.qty), 0);
+    document.getElementById('subtotal').textContent  = fp(subtotal);
+    document.getElementById('totalPrice').textContent = fp(o.total);
+  }
+
+  // ── Init ─────────────────────────────────────────────────
+  async function init() {
+    const user = session.get('customerSession');
+    if (user) document.getElementById('userTag').innerHTML = `<i class="bi bi-person-circle me-1 text-danger"></i>${user.name}`;
+
+    const id = getOrderId();
+    currentOrderId = id;
+    if (!id || isNaN(id)) {
+      document.getElementById('notFoundBox').classList.remove('d-none');
+      return;
+    }
+
+    // Load ảnh sản phẩm TRƯỚC khi render
+    await loadProductImages();
+
+    // Thử cache trước
+    try {
+      const cached = localStorage.getItem('orderCache_' + id);
+      if (cached) {
+        const order = JSON.parse(cached);
+        renderOrder(order);
+        // Refresh ngầm
+        try {
+          const orders = await api.orders.getMyOrders();
+          const fresh = orders.find(o => o.id === id);
+          if (fresh) {
+            localStorage.setItem('orderCache_' + id, JSON.stringify(fresh));
+            // Chỉ re-render nếu status thay đổi (tránh reset polling đang chạy)
+            if (fresh.status !== order.status || fresh.paymentStatus !== order.paymentStatus) {
+              renderOrder(fresh);
+            }
+          }
+        } catch(_) {}
+        return;
+      }
+    } catch(_) {}
+
+    // Không có cache → gọi API
+    try {
+      let order = null;
+      try {
+        const orders = await api.orders.getMyOrders();
+        order = orders.find(o => o.id === id);
+      } catch(_) {}
+      if (!order) {
+        try { order = await api.orders.getById(id); } catch(_) {}
+      }
+      if (!order) { document.getElementById('notFoundBox').classList.remove('d-none'); return; }
+      try { localStorage.setItem('orderCache_' + id, JSON.stringify(order)); } catch(_) {}
+      renderOrder(order);
+    } catch(e) {
+      console.error('Order fetch error:', e);
+      document.getElementById('notFoundBox').classList.remove('d-none');
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Sản phẩm – Nhân viên TranThai</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <style>
+    body{margin:0;font-family:"Montserrat",sans-serif}.staff-layout{display:flex;min-height:100vh}
+    .staff-sidebar{width:230px;background:linear-gradient(180deg,#c8102e,#7a0b1c);padding:24px 16px;min-height:100vh;position:sticky;top:0;display:flex;flex-direction:column;flex-shrink:0}
+    .sidebar-brand{font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.2)}
+    .sidebar-nav{flex:1;margin-top:12px}.sidebar-link{display:block;color:rgba(255,255,255,.8);text-decoration:none;padding:11px 14px;border-radius:12px;margin-bottom:4px;font-weight:500;transition:.2s;font-size:14px}
+    .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.2);color:#fff}
+    .sidebar-footer{border-top:1px solid rgba(255,255,255,.2);padding-top:16px}.sidebar-footer-name{font-weight:700;color:#fff;font-size:14px}
+    .content-area{flex:1;padding:28px;background:linear-gradient(135deg,#fff6f0,#ffeaea,#fff5f5);min-height:100vh}
+    .form-card{background:#fff;border-radius:16px;padding:22px;box-shadow:0 8px 28px rgba(200,16,46,.1);margin-bottom:20px}
+    .toast-msg{position:fixed;bottom:28px;right:28px;z-index:99999;border-radius:14px;padding:12px 20px;font-size:13px;font-weight:600;display:flex;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.15);transition:all .3s;opacity:0;pointer-events:none}
+    .toast-msg.show{opacity:1}.toast-ok{background:#28a745;color:#fff}.toast-err{background:#c8102e;color:#fff}
+    .table-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(200,16,46,.08)}
+    .table thead th{background:#c8102e;color:#fff;font-weight:600;font-size:13px;border:none;padding:12px 14px;white-space:nowrap}
+    .table tbody tr{transition:.15s}
+    .table tbody tr:hover{background:#fff5f5}
+    .table tbody td{vertical-align:middle;font-size:13px;padding:10px 14px;border-color:#f0e0e0}
+    .prod-thumb{width:44px;height:56px;object-fit:cover;border-radius:8px;border:1px solid #f0e0e0}
+    .status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+    .badge-green{background:#d4edda;color:#155724}.badge-yellow{background:#fff3cd;color:#856404}.badge-red{background:#f8d7da;color:#721c24}
+    .btn-action{width:32px;height:32px;border-radius:8px;border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;transition:.15s}
+    .btn-edit{background:#fff3cd;color:#856404}.btn-edit:hover{background:#ffc107;color:#fff}
+    .field-error{font-size:11px;color:#c8102e;margin-top:4px;display:none}
+    .form-control.is-invalid,.form-select.is-invalid{border-color:#c8102e;box-shadow:0 0 0 2px rgba(200,16,46,.15)}
+    .form-control.is-valid,.form-select.is-valid{border-color:#28a745}
+  </style>
+</head><body>
+<div class="staff-layout">
+  <div class="staff-sidebar">
+    <div class="sidebar-brand">Nhân viên</div>
+    <nav class="sidebar-nav">
+      <a href="/staff/orders.html" class="sidebar-link"><i class="bi bi-bag-check me-2"></i>Đơn hàng</a>
+      <a href="/staff/products.html" class="sidebar-link active"><i class="bi bi-box me-2"></i>Sản phẩm</a>
+      <a href="/staff/support.html" class="sidebar-link"><i class="bi bi-chat-dots me-2"></i>Hỗ trợ KH</a>
+      <a href="/staff/sales.html" class="sidebar-link"><i class="bi bi-graph-up me-2"></i>Doanh thu</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="small text-white-50">Đăng nhập với tư cách</div>
+      <div class="sidebar-footer-name" id="staffName">Nhân viên</div>
+      <button class="btn btn-sm btn-outline-light mt-2 w-100" onclick="doLogout()">Đăng xuất</button>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h3 style="color:#c8102e;font-weight:800;margin:0">Quản lý sản phẩm</h3>
+        <p class="text-muted small mb-0" id="subTitle">0 sản phẩm</p>
+      </div>
+      <button class="btn btn-danger" onclick="openAdd()"><i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm</button>
+    </div>
+    <div class="d-flex gap-2 mb-3">
+      <input id="searchInput" class="form-control form-control-sm" placeholder="Tìm sản phẩm..." style="width:220px" oninput="filterList()"/>
+      <select id="statusFilter" class="form-select form-select-sm" style="width:160px" onchange="filterList()">
+        <option value="">Tất cả trạng thái</option>
+        <option value="Đang bán">Đang bán</option>
+        <option value="Sắp hết">Sắp hết</option>
+        <option value="Ngừng bán">Ngừng bán</option>
+      </select>
+    </div>
+
+    <div class="form-card d-none" id="productForm">
+      <div class="d-flex justify-content-between mb-3">
+        <h6 class="fw-bold mb-0" id="formTitle">Thêm sản phẩm</h6>
+        <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="cancelForm()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="row g-3">
+        <div class="col-12"><label class="form-label small fw-bold">Tên sản phẩm *</label><input id="fName" class="form-control" oninput="clearErr('fName')"/><div class="field-error" id="err-fName">Vui lòng nhập tên sản phẩm</div></div>
+        <div class="col-6"><label class="form-label small fw-bold" id="lblPrice">Giá bán (đ) *</label><input id="fPrice" type="number" class="form-control" oninput="clearErr('fPrice')"/><div class="field-error" id="err-fPrice">Vui lòng nhập giá hợp lệ (≥ 0 đ)</div></div>
+        <div class="col-6"><label class="form-label small fw-bold">Tồn kho *</label><input id="fStock" type="number" class="form-control" min="0" oninput="clearErr('fStock')"/><div class="field-error" id="err-fStock">Tồn kho phải là số nguyên ≥ 0</div></div>
+        <div class="col-6"><label class="form-label small fw-bold">Danh mục</label>
+          <select id="fCategory" class="form-select" onchange="clearErr('fCategory')"><option value="">-- Chọn danh mục --</option><option value="Nam">Áo dài Nam</option><option value="Nữ">Áo dài Nữ</option></select><div class="field-error" id="err-fCategory">Vui lòng chọn danh mục</div></div>
+        <div class="col-6"><label class="form-label small fw-bold">Trạng thái</label>
+          <select id="fStatus" class="form-select"><option value="Đang bán">Đang bán</option><option value="Sắp hết">Sắp hết</option><option value="Ngừng bán">Ngừng bán</option></select></div>
+        <div class="col-12"><label class="form-label small fw-bold">Ảnh sản phẩm</label>
+          <input id="fImageFile" type="file" accept="image/*" class="form-control" onchange="previewImgFile(this);clearErr('fImageFile')"  />
+          <img id="imgPreview" src="" class="mt-2 d-none" style="width:80px;height:100px;object-fit:cover;border-radius:8px"/>
+          <div class="field-error" id="err-fImageFile">Vui lòng chọn ảnh sản phẩm</div><input id="fImage" type="hidden" value=""/></div>
+        <div class="col-12"><label class="form-label small fw-bold">Mô tả *</label><textarea id="fDesc" class="form-control" rows="2" oninput="clearErr('fDesc')"></textarea><div class="field-error" id="err-fDesc">Vui lòng nhập mô tả sản phẩm</div></div>
+      </div>
+      <div class="d-flex gap-2 mt-3 justify-content-end">
+        <button class="btn btn-outline-secondary" onclick="cancelForm()">Hủy</button>
+        <button class="btn btn-danger" onclick="saveProduct()">💾 Lưu</button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" id="productTable">
+          <thead>
+          <tr>
+            <th style="width:60px">Ảnh</th>
+            <th>Tên sản phẩm</th>
+            <th>Danh mục</th>
+            <th>Giá bán</th>
+            <th>Tồn kho</th>
+            <th>Trạng thái</th>
+            <th style="width:70px">Thao tác</th>
+          </tr>
+          </thead>
+          <tbody id="productTableBody">
+          <tr><td colspan="7" class="text-center text-muted py-5">Đang tải...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast-msg" id="toastEl"></div>
+<script src="/shop-api.js"></script>
+<script>
+  const sess = session.get('staffSession');
+  if (!sess) location.href = '/staff/login.html';
+  document.getElementById('staffName').textContent = sess?.name || 'Nhân viên';
+  let products = [], isEdit = false, editId = null;
+
+  async function loadProducts() {
+    try { products = (await api.products.getAllAdmin()).filter(p => !p.deleted); filterList(); }
+    catch(e) { console.error(e); }
+  }
+
+  function getDisplayStatus(p) {
+    if (p.status === 'Ngừng bán') return 'Ngừng bán';
+    if (Number(p.stock) <= 10) return 'Sắp hết';
+    return p.status || 'Đang bán';
+  }
+
+  function filterList() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const st = document.getElementById('statusFilter').value;
+    const list = products.filter(p => {
+      const displayStatus = getDisplayStatus(p);
+      return (!q || p.name.toLowerCase().includes(q)) && (!st || displayStatus === st);
+    });
+    document.getElementById('subTitle').textContent = list.length + ' sản phẩm';
+    const tbody = document.getElementById('productTableBody');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-5">Không tìm thấy sản phẩm</td></tr>';
+      return;
+    }
+    const bc = s => {
+      if (s === 'Ngừng bán') return 'badge-red';
+      if (s === 'Sắp hết') return 'badge-yellow';
+      return 'badge-green';
+    };
+    tbody.innerHTML = list.map(p => {
+      const ds = getDisplayStatus(p);
+      return `<tr>
+        <td><img src="${p.image||'https://via.placeholder.com/44x56'}" class="prod-thumb" onerror="this.src='https://via.placeholder.com/44x56'"/></td>
+        <td><div class="fw-bold" style="font-size:13px">${p.name}</div><div class="text-muted" style="font-size:11px">#${p.id}</div></td>
+        <td>${p.category||'—'}</td>
+        <td class="fw-bold" style="color:#c8102e">${fp(p.price)}</td>
+        <td>${p.stock||0}</td>
+        <td><span class="status-badge ${bc(ds)}">${ds}</span></td>
+        <td>
+          <button class="btn-action btn-edit" onclick='editProduct(${JSON.stringify(p).replace(/'/g,"&apos;")})' title="Sửa"><i class="bi bi-pencil-fill"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function previewImgFile(input) {
+    const pr = document.getElementById('imgPreview');
+    const file = input.files[0];
+    if (!file) { pr.classList.add('d-none'); document.getElementById('fImage').value=''; return; }
+    const reader = new FileReader();
+    reader.onload = function(e) { document.getElementById('fImage').value = e.target.result; pr.src = e.target.result; pr.classList.remove('d-none'); };
+    reader.readAsDataURL(file);
+  }
+
+  function openAdd() {
+    isEdit = false; editId = null; resetForm();
+    document.getElementById('formTitle').textContent = '➕ Thêm sản phẩm mới';
+    document.getElementById('lblPrice').textContent = 'Giá bán (đ) *';
+    document.getElementById('fPrice').disabled = false;
+    document.getElementById('productForm').classList.remove('d-none');
+    document.getElementById('productForm').scrollIntoView({behavior:'smooth'});
+  }
+
+  function editProduct(p) {
+    isEdit = true; editId = p.id; resetForm();
+    document.getElementById('formTitle').textContent = '✏️ Chỉnh sửa sản phẩm';
+    document.getElementById('fName').value = p.name||'';
+    document.getElementById('fPrice').value = p.price||''; document.getElementById('fPrice').disabled = true;
+    document.getElementById('lblPrice').textContent = 'Giá bán (đ) 🔒 Chỉ Admin';
+    document.getElementById('fStock').value = p.stock||'';
+    document.getElementById('fCategory').value = p.category||''; document.getElementById('fStatus').value = p.status||'Đang bán';
+    document.getElementById('fImage').value = p.image||'';
+    document.getElementById('fImageFile').value = '';
+    document.getElementById('fDesc').value = p.description||'';
+    if (p.image) { const pr = document.getElementById('imgPreview'); pr.src = p.image; pr.classList.remove('d-none'); }
+    document.getElementById('productForm').classList.remove('d-none');
+    document.getElementById('productForm').scrollIntoView({behavior:'smooth'});
+  }
+
+  function resetForm() {
+    clearAllErrors();
+    ['fName','fPrice','fStock','fDesc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fImage').value=''; document.getElementById('fImageFile').value='';
+    document.getElementById('fCategory').value=''; document.getElementById('fStatus').value='Đang bán';
+    document.getElementById('imgPreview').classList.add('d-none');
+  }
+  function cancelForm() { document.getElementById('productForm').classList.add('d-none'); }
+
+  function showErr(id, msg) {
+    const el = document.getElementById('err-' + id);
+    const inp = document.getElementById(id);
+    if (el) { if (msg) el.textContent = msg; el.style.display = 'block'; }
+    if (inp) inp.classList.add('is-invalid');
+  }
+  function clearErr(id) {
+    const el = document.getElementById('err-' + id);
+    const inp = document.getElementById(id);
+    if (el) el.style.display = 'none';
+    if (inp) { inp.classList.remove('is-invalid'); inp.classList.add('is-valid'); }
+  }
+  function clearAllErrors() {
+    document.querySelectorAll('.field-error').forEach(e => e.style.display = 'none');
+    document.querySelectorAll('.is-invalid,.is-valid').forEach(e => { e.classList.remove('is-invalid','is-valid'); });
+  }
+
+  async function saveProduct() {
+    clearAllErrors();
+    const name = document.getElementById('fName').value.trim();
+    const price = document.getElementById('fPrice').value;
+    const stock = document.getElementById('fStock').value;
+    const category = document.getElementById('fCategory').value;
+    const image = document.getElementById('fImage').value.trim();
+    const desc = document.getElementById('fDesc').value.trim();
+    let valid = true;
+
+    if (!name) { showErr('fName'); valid = false; }
+    if (!isEdit) {
+      if (!price || isNaN(Number(price)) || Number(price) < 0) { showErr('fPrice', 'Vui lòng nhập giá hợp lệ (≥ 0 đ)'); valid = false; }
+    }
+    if (stock === '' || isNaN(Number(stock)) || Number(stock) < 0 || !Number.isInteger(Number(stock))) { showErr('fStock', 'Tồn kho phải là số nguyên ≥ 0'); valid = false; }
+    if (!category) { showErr('fCategory'); valid = false; }
+    if (!image) { showErr('fImageFile', 'Vui lòng chọn ảnh sản phẩm'); valid = false; }
+    if (!desc) { showErr('fDesc'); valid = false; }
+    if (!valid) return;
+
+    let autoStatus = document.getElementById('fStatus').value;
+    if (autoStatus !== 'Ngừng bán') {
+      if (Number(stock) <= 10) autoStatus = 'Sắp hết';
+      else if (autoStatus === 'Sắp hết') autoStatus = 'Đang bán';
+    }
+    const data = { name, stock: Number(stock), category,
+      status: autoStatus, image, description: desc };
+    if (!isEdit) data.price = Number(price);
+    else {
+      const currentProduct = products.find(p => p.id === editId);
+      data.price = currentProduct ? currentProduct.price : Number(document.getElementById('fPrice').value);
+    }
+    try {
+      if (isEdit) await api.products.update(editId, data); else await api.products.create(data);
+      cancelForm(); loadProducts(); showToast(isEdit?'Đã cập nhật sản phẩm':'Đã thêm sản phẩm mới','ok');
+    } catch(e) { alert(e.message); }
+  }
+
+  function showToast(msg, type) {
+    const el = document.getElementById('toastEl'); el.className=`toast-msg show toast-${type}`;
+    el.innerHTML=`<i class="bi bi-check-circle-fill me-2"></i>${msg}`; setTimeout(()=>el.classList.remove('show'),2500);
+  }
+  function fp(p){return Number(p).toLocaleString('vi-VN')+' đ';}
+  function doLogout(){session.remove('staffSession');location.href='/staff/login.html';}
+  loadProducts();
+</script>
+</body></html>

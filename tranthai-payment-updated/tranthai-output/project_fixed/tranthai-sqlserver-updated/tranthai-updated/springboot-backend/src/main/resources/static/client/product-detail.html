@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Chi tiết sản phẩm – Áo Dài Thanh Xuân</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <style>
+    body{font-family:"Montserrat",sans-serif;background:linear-gradient(to bottom,#fff5f5,#ffffff)}
+    .navbar{background:#fff!important;padding:14px 0;border-bottom:1px solid #f0f0f0}
+    .navbar-brand{font-size:22px;color:#c8102e!important;font-weight:800;cursor:pointer}
+    .product-img-main{width:50%;object-fit:cover;border-radius:18px;box-shadow:0 15px 35px rgba(0,0,0,.08);transition:.4s}
+    .product-img-main:hover{transform:scale(1.02)}
+    .price{color:#c8102e;font-size:1.8rem;font-weight:700}
+    .btn-size{min-width:45px;height:45px;border:1.5px solid #ddd;border-radius:10px;background:#fff;transition:.3s;font-weight:500;cursor:pointer}
+    .btn-size:hover{background:#fff0f0;border-color:#c8102e}
+    .btn-size.active{background:linear-gradient(to right,#c8102e,#e63946);color:#fff;border:none;box-shadow:0 5px 15px rgba(200,16,46,.25)}
+    .stock-info{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;background:#f5f5f5}
+    .btn-danger{background:linear-gradient(to right,#c8102e,#e63946);border:none;border-radius:12px;transition:.3s;font-weight:600}
+    .btn-danger:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(200,16,46,.3)}
+    .btn-danger:disabled{opacity:.6;cursor:not-allowed}
+    .product-description{background:#fefaf5;padding:20px;border-radius:16px;border-left:4px solid #c8102e}
+    #addedToast{display:none}#addedToast.show{display:flex}
+    footer{background:linear-gradient(to right,#111,#1c1c1c);color:#bbb}
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold" onclick="location.href='/client/home.html'">Áo Dài Thanh Xuân</a>
+    <div class="ms-auto d-flex gap-2">
+      <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="location.href='/client/cart.html'"><i class="bi bi-bag me-1"></i>Giỏ hàng</button>
+    </div>
+  </div>
+</nav>
+<div class="container mt-4">
+  <nav><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a style="color:#c8102e;cursor:pointer" onclick="location.href='/client/home.html'">Trang chủ</a></li>
+    <li class="breadcrumb-item">Áo dài</li>
+    <li class="breadcrumb-item active">Chi tiết sản phẩm</li>
+  </ol></nav>
+</div>
+<section class="container my-4">
+  <div id="loadingDiv" class="text-center py-5"><div class="spinner-border text-danger"></div></div>
+  <div id="productDetail" class="row g-4 d-none">
+    <div class="col-lg-6">
+      <img id="productImg" src="" class="product-img-main" onerror="this.src='https://via.placeholder.com/400x500'"/>
+    </div>
+    <div class="col-lg-6">
+      <h3 class="fw-bold" id="productName">–</h3>
+      <div class="mb-3"><span class="price" id="productPrice">0 đ</span></div>
+      <hr/>
+      <p class="fw-semibold mb-1">Size</p>
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn-size active" onclick="selectSize(this,'S')">S</button>
+        <button class="btn-size" onclick="selectSize(this,'M')">M</button>
+        <button class="btn-size" onclick="selectSize(this,'L')">L</button>
+        <button class="btn-size" onclick="selectSize(this,'XL')">XL</button>
+      </div>
+      <div class="mb-3"><p class="fw-semibold mb-1">Tồn kho</p><span class="stock-info" id="stockInfo">–</span></div>
+      <p class="fw-semibold mb-1">Số lượng</p>
+      <input type="number" id="qtyInput" value="1" min="1" class="form-control w-25 mb-4"/>
+      <div class="d-flex gap-3">
+        <button class="btn btn-danger px-4" id="addCartBtn" onclick="addToCart()"><i class="bi bi-cart"></i> Thêm vào giỏ</button>
+        <button class="btn btn-outline-dark px-4"><i class="bi bi-heart"></i> Yêu thích</button>
+      </div>
+      <div id="outofstockAlert" class="alert alert-warning mt-3 py-2 small d-none">
+        <i class="bi bi-exclamation-triangle me-1"></i>Sản phẩm này hiện đã hết hàng.
+      </div>
+      <div id="addedToast" class="alert alert-success mt-3 py-2 small align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        <span id="toastMsg">Đã thêm vào giỏ hàng!</span>
+        <a style="cursor:pointer;margin-left:auto;font-weight:700;color:#198754" onclick="location.href='/client/cart.html'">Xem giỏ →</a>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="container my-5">
+  <h5 class="fw-bold mb-3" style="color:#c8102e">Mô tả sản phẩm</h5>
+  <div id="descSection" class="product-description d-none">
+    <p class="small" id="productDesc" style="white-space:pre-line;line-height:1.8"></p>
+  </div>
+  <div id="noDescMsg" class="text-muted small"><i class="bi bi-file-text me-1"></i>Chưa có mô tả chi tiết cho sản phẩm này.</div>
+</section>
+<footer class="pt-4 pb-4"><div class="container text-center"><p class="small mb-0">© 2026 TranThai – Chúc mừng năm mới an khang thịnh vượng</p></div></footer>
+<script src="/shop-api.js"></script>
+<script>
+  let product = {}, selectedSize = 'S';
+
+  function getProductId() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('id')) return params.get('id');
+    const parts = location.pathname.split('/');
+    return parts[parts.length-1];
+  }
+
+  async function init() {
+    const id = getProductId();
+    try {
+      product = await api.products.getById(id);
+      document.getElementById('loadingDiv').classList.add('d-none');
+      document.getElementById('productDetail').classList.remove('d-none');
+      document.getElementById('productName').textContent = product.name||'Không tìm thấy sản phẩm';
+      document.getElementById('productPrice').textContent = fp(product.price);
+      document.getElementById('productImg').src = product.image||'https://via.placeholder.com/400x500';
+      const stock = product.stock||0;
+      const stockEl = document.getElementById('stockInfo');
+      if (stock<=0) {
+        stockEl.innerHTML='<i class="bi bi-x-circle me-1 text-danger"></i><span class="text-danger">'+stock+' cái (Hết hàng)</span>';
+        document.getElementById('qtyInput').disabled=true; document.getElementById('qtyInput').value=0;
+        document.getElementById('addCartBtn').disabled=true; document.getElementById('addCartBtn').innerHTML='<i class="bi bi-cart"></i> Hết hàng';
+        document.getElementById('outofstockAlert').classList.remove('d-none');
+      } else if(stock<=5) {
+        stockEl.innerHTML='<i class="bi bi-exclamation-triangle me-1 text-warning"></i><span class="text-warning">'+stock+' cái</span>';
+        document.getElementById('qtyInput').max=stock;
+      } else {
+        stockEl.innerHTML='<i class="bi bi-check-circle me-1 text-success"></i><span class="text-success">'+stock+' cái</span>';
+        document.getElementById('qtyInput').max=stock;
+      }
+      if (product.description && product.description.trim()) {
+        document.getElementById('productDesc').textContent=product.description;
+        document.getElementById('descSection').classList.remove('d-none');
+        document.getElementById('noDescMsg').classList.add('d-none');
+      }
+    } catch(e) {
+      document.getElementById('loadingDiv').innerHTML='<p class="text-danger">Không tìm thấy sản phẩm</p>';
+    }
+  }
+
+  function selectSize(btn, size) {
+    selectedSize=size;
+    document.querySelectorAll('.btn-size').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  async function addToCart() {
+    const user = session.get('customerSession');
+    if (!user) {
+      if(confirm('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.\nBấm OK để đến trang đăng nhập.'))
+        location.href='/client/login.html';
+      return;
+    }
+    const stock = product.stock||0;
+    if (stock<=0) { alert('Sản phẩm này đã hết hàng!'); return; }
+    const qty = parseInt(document.getElementById('qtyInput').value)||1;
+    if (qty<1) { alert('Số lượng phải ít nhất là 1'); return; }
+    if (qty>stock) { alert(`Số lượng (${qty}) vượt quá tồn kho (${stock})`); return; }
+    try {
+      await api.cart.add({
+        productId: product.id, productName: product.name, price: product.price,
+        qty, size: selectedSize, image: product.image,
+        cartKey: product.id+'_'+selectedSize
+      });
+      const toast=document.getElementById('addedToast');
+      document.getElementById('toastMsg').textContent='Đã thêm vào giỏ hàng!';
+      toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000);
+    } catch(e) { alert(e.message||'Lỗi khi thêm vào giỏ hàng'); }
+  }
+
+  function fp(p){return Number(p||0).toLocaleString('vi-VN')+' đ';}
+  init();
+</script>
+</body></html>

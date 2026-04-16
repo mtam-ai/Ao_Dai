@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Áo Dài Thanh Xuân – Trang chủ</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <style>
+    body{font-family:"Montserrat",sans-serif;background:linear-gradient(to bottom,#fff5f5,#ffffff);margin:0}
+    .mai-container{position:fixed;inset:0;pointer-events:none;z-index:0}
+    .mai{position:absolute;top:-10%;font-size:24px;animation:mai-fall linear infinite;opacity:.8}
+    @keyframes mai-fall{0%{transform:translateY(0) rotate(0deg)}100%{transform:translateY(110vh) rotate(360deg)}}
+    .navbar{background:#fff;border-bottom:1px solid #f0f0f0;padding:12px 0;position:sticky;top:0;z-index:100}
+    .navbar-brand{color:#c8102e!important;font-size:22px;letter-spacing:1px;font-weight:800}
+    .search-box input{border-radius:30px;padding:8px 18px;border:1px solid #eee;width:240px}
+    .search-box input:focus{border-color:#c8102e;box-shadow:0 0 0 .15rem rgba(200,16,46,.2);outline:none}
+    .btn-cart-icon{position:relative;background:#fff0f0;border:1.5px solid #fde0e0;color:#c8102e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:.2s;flex-shrink:0}
+    .btn-cart-icon:hover{background:#c8102e;color:#fff;border-color:#c8102e}
+    .cart-badge{position:absolute;top:-5px;right:-5px;background:#c8102e;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+    .hero{min-height:90vh;background-image:url("https://tamanh.net/wp-content/uploads/2023/01/tao-dang-chup-anh-ao-dai-voi-hoa.jpg");background-size:cover;background-position:center;position:relative;display:flex;align-items:center}
+    .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(200,29,37,.6),rgba(0,0,0,.5))}
+    .hero-content{position:relative;z-index:2;color:#fff}
+    .hero-title{font-size:52px;font-weight:800;letter-spacing:2px}
+    .hero-badge{background:#ffd700;color:#111;padding:6px 16px;border-radius:20px;font-weight:600;font-size:14px}
+    .hero-subtitle{font-size:16px;opacity:.9;margin-top:8px}
+    .filter-box{background:#fff;border-radius:16px;padding:24px;box-shadow:0 8px 25px rgba(0,0,0,.05)}
+    .category-btn{background:#fff;border:1px solid #eee;border-radius:12px;padding:10px 14px;text-align:left;font-weight:500;transition:all .3s;display:flex;align-items:center;gap:8px;cursor:pointer;width:100%;margin-bottom:8px}
+    .category-btn:hover,.category-btn.active{background:linear-gradient(to right,#c8102e,#e63946);color:#fff;border:none;box-shadow:0 6px 18px rgba(200,16,46,.25)}
+    .product-card{border:none;border-radius:16px;overflow:hidden;transition:.3s;box-shadow:0 6px 20px rgba(0,0,0,.05);background:#fff;position:relative}
+    .product-card:hover{transform:translateY(-6px);box-shadow:0 15px 35px rgba(0,0,0,.1)}
+    .product-img{height:380px;object-fit:cover;transition:.5s;width:100%}
+    .product-card:hover .product-img{transform:scale(1.08)}
+    .price{color:#c8102e;font-weight:700;font-size:15px}
+    .product-title{font-weight:600;font-size:14px;min-height:40px}
+    footer{background:linear-gradient(to right,#111,#1c1c1c);color:#bbb}
+  </style>
+</head>
+<body>
+<div class="mai-container" id="maiContainer"></div>
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container d-flex align-items-center gap-3">
+    <a class="navbar-brand fw-bold">Áo Dài Thanh Xuân</a>
+    <div class="mx-auto d-flex search-box">
+      <input id="searchInput" class="form-control" placeholder="Tìm theo tên sản phẩm..." oninput="doSearch()"/>
+      <button class="btn btn-outline-danger ms-1 rounded-pill" onclick="doSearch()">Tìm</button>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn-cart-icon" onclick="location.href='/client/cart.html'">
+        <i class="bi bi-bag"></i>
+        <span class="cart-badge d-none" id="cartBadge">0</span>
+      </button>
+      <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="location.href='/client/support.html'"><i class="bi bi-chat-dots me-1"></i>Hỗ trợ</button>
+      <div id="guestButtons">
+        <button class="btn btn-sm btn-outline-secondary rounded-pill me-1" onclick="location.href='/client/login.html'">Đăng nhập</button>
+        <button class="btn btn-sm btn-danger rounded-pill" onclick="location.href='/client/register.html'">Đăng ký</button>
+      </div>
+      <div id="userDropdown" class="dropdown d-none">
+        <button class="btn btn-sm btn-danger rounded-pill dropdown-toggle" data-bs-toggle="dropdown">
+          <i class="bi bi-person-circle me-1"></i><span id="userName"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><span class="dropdown-item-text small text-muted" id="userEmail"></span></li>
+          <li><hr class="dropdown-divider"/></li>
+          <li><a class="dropdown-item" style="cursor:pointer" onclick="location.href='/client/profile.html'"><i class="bi bi-person-circle me-2 text-danger"></i>Trang cá nhân</a></li>
+          <li><a class="dropdown-item" style="cursor:pointer" onclick="location.href='/client/order-history.html'"><i class="bi bi-clock-history me-2 text-danger"></i>Lịch sử mua hàng</a></li>
+          <li><hr class="dropdown-divider"/></li>
+          <li><a class="dropdown-item" style="cursor:pointer" onclick="doLogout()"><i class="bi bi-box-arrow-right me-2 text-danger"></i>Đăng xuất</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+<section class="hero d-flex align-items-center" id="heroSection">
+  <div class="container hero-content text-center">
+    <span class="hero-badge">Áo Dài Thanh Xuân</span>
+    <h1 class="hero-title mt-3">ÁO DÀI ĐÓN TẾT</h1>
+    <p class="hero-subtitle">Truyền thống tinh hoa – Khởi đầu năm mới an khang</p>
+  </div>
+</section>
+<div class="container mt-4">
+  <div class="row" id="mainRow">
+    <div class="col-lg-3 mb-4" id="filterCol">
+      <div class="filter-box">
+        <h6 class="fw-bold mb-3">BỘ LỌC</h6><hr/>
+        <p style="font-weight:700;font-size:15px;margin-bottom:12px;color:#c8102e">Loại áo dài</p>
+        <button class="category-btn active" onclick="filterCategory('')" id="cat-all"><span>🌸</span>Tất cả</button>
+        <button class="category-btn" onclick="filterCategory('Nam')" id="cat-nam"><span>🧧</span>Áo dài Nam</button>
+        <button class="category-btn" onclick="filterCategory('Nữ')" id="cat-nu"><span>🌼</span>Áo dài Nữ</button>
+      </div>
+    </div>
+    <div class="col-lg-9" id="productCol">
+      <div id="searchResultTitle" class="mb-3 d-none">
+        <h5 class="fw-bold">Kết quả: "<span class="text-danger" id="searchKeyDisplay"></span>"
+          <button class="btn btn-sm btn-outline-secondary ms-2 rounded-pill" onclick="clearSearch()">Xóa</button></h5>
+      </div>
+      <span class="text-muted" id="productCount">0 sản phẩm</span>
+      <div id="emptyMsg" class="text-center py-5 text-muted d-none"><i class="bi bi-search fs-1 d-block mb-2"></i>Không tìm thấy sản phẩm nào</div>
+      <div class="row g-4 mt-1" id="productGrid"></div>
+    </div>
+  </div>
+</div>
+<footer class="mt-5 pt-4 pb-4">
+  <div class="container"><div class="row">
+    <div class="col-md-4"><h6 class="fw-bold text-white">TranThai</h6><p class="small">Thời trang cao cấp</p></div>
+    <div class="col-md-4"><h6 class="fw-bold text-white">HỖ TRỢ</h6><p class="small" style="cursor:pointer" onclick="location.href='/client/support.html'">💬 Chat với nhân viên</p></div>
+    <div class="col-md-4"><h6 class="fw-bold text-white">KẾT NỐI</h6><i class="bi bi-facebook me-2"></i><i class="bi bi-instagram me-2"></i><i class="bi bi-tiktok"></i></div>
+  </div></div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/shop-api.js"></script>
+<script>
+  let allProducts = [], selectedCategory = '';
+  const mc = document.getElementById('maiContainer');
+  ['🌼','🌸','🌼','🌸','🌼','🌸'].forEach((em,i) => {
+    const s = document.createElement('span'); s.className='mai'; s.textContent=em;
+    s.style.cssText=`left:${(i+1)*14}%;animation-duration:${3+(i+1)*0.5}s;animation-delay:${(i+1)*0.3}s`; mc.appendChild(s);
+  });
+
+  async function init() {
+    const user = session.get('customerSession');
+    if (user) {
+      document.getElementById('guestButtons').classList.add('d-none');
+      document.getElementById('userDropdown').classList.remove('d-none');
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userEmail').textContent = user.email;
+      updateCartBadge();
+    }
+    try {
+      allProducts = await api.products.getAll();
+      renderProducts(allProducts);
+    } catch(e) { console.error(e); }
+  }
+
+  async function updateCartBadge() {
+    const user = session.get('customerSession');
+    if (!user) return;
+    try {
+      const cart = await api.cart.get();
+      const badge = document.getElementById('cartBadge');
+      badge.textContent = cart.length;
+      cart.length > 0 ? badge.classList.remove('d-none') : badge.classList.add('d-none');
+    } catch(e) {}
+  }
+
+  function renderProducts(products) {
+    const grid = document.getElementById('productGrid');
+    const empty = document.getElementById('emptyMsg');
+    document.getElementById('productCount').textContent = products.length + ' sản phẩm';
+    if (!products.length) { grid.innerHTML=''; empty.classList.remove('d-none'); return; }
+    empty.classList.add('d-none');
+    grid.innerHTML = products.map(p => `
+      <div class="col-6 col-md-4 col-xl-3">
+        <div class="card product-card">
+          <img src="${p.image||'https://via.placeholder.com/300x380'}" class="product-img w-100" onerror="this.src='https://via.placeholder.com/300x380'"/>
+          <div class="card-body p-2">
+            <div class="product-title">${p.name}</div>
+            <span class="price">${fp(p.price)}</span>
+            <button class="btn btn-sm btn-danger w-100 mt-2" onclick="viewDetail(${p.id})">Mua ngay</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function doSearch() {
+    const kw = document.getElementById('searchInput').value.trim().toLowerCase();
+    const filterCol = document.getElementById('filterCol');
+    const heroSection = document.getElementById('heroSection');
+    const searchTitle = document.getElementById('searchResultTitle');
+    const productCol = document.getElementById('productCol');
+    if (kw) {
+      filterCol.classList.add('d-none'); heroSection.classList.add('d-none');
+      productCol.className='col-12'; searchTitle.classList.remove('d-none');
+      document.getElementById('searchKeyDisplay').textContent = kw;
+      renderProducts(allProducts.filter(p => p.name?.toLowerCase().includes(kw)));
+    } else {
+      filterCol.classList.remove('d-none'); heroSection.classList.remove('d-none');
+      productCol.className='col-lg-9'; searchTitle.classList.add('d-none');
+      filterCategory(selectedCategory);
+    }
+  }
+
+  function clearSearch() { document.getElementById('searchInput').value=''; doSearch(); }
+
+  function filterCategory(cat) {
+    selectedCategory = cat;
+    ['all','nam','nu'].forEach(id => document.getElementById('cat-'+id)?.classList.remove('active'));
+    const map = {'':'all','Nam':'nam','Nữ':'nu'};
+    document.getElementById('cat-'+(map[cat]||'all'))?.classList.add('active');
+    renderProducts(cat ? allProducts.filter(p=>p.category===cat) : [...allProducts]);
+  }
+
+  function viewDetail(id) { location.href = '/client/product-detail.html?id=' + id; }
+  function doLogout() { if(confirm('Bạn có chắc muốn đăng xuất?')){ session.remove('customerSession'); location.reload(); } }
+  function fp(p){return Number(p).toLocaleString('vi-VN')+' đ';}
+  init();
+</script>
+</body></html>

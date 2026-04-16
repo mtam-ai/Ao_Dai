@@ -1,0 +1,226 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Đơn hàng – Nhân viên TranThai</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <style>
+    body{margin:0;font-family:"Montserrat",sans-serif}.staff-layout{display:flex;min-height:100vh}.staff-sidebar{width:230px;background:linear-gradient(180deg,#c8102e,#7a0b1c);padding:24px 16px;min-height:100vh;position:sticky;top:0;display:flex;flex-direction:column;flex-shrink:0}.sidebar-brand{font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.2)}.sidebar-nav{flex:1;margin-top:12px}.sidebar-link{display:block;color:rgba(255,255,255,.8);text-decoration:none;padding:11px 14px;border-radius:12px;margin-bottom:4px;font-weight:500;transition:.2s;font-size:14px}.sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.2);color:#fff}.sidebar-footer{border-top:1px solid rgba(255,255,255,.2);padding-top:16px}.sidebar-footer-name{font-weight:700;color:#fff;font-size:14px}
+    .content{flex:1;padding:40px;background:linear-gradient(135deg,#fff6f0,#ffeaea);min-height:100vh}
+    h3{color:#c8102e;font-weight:700}
+    .stat-card{border-radius:16px;padding:20px;color:#fff;text-align:center}
+    .stat-pending{background:linear-gradient(135deg,#f59e0b,#d97706)}.stat-confirmed{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+    .stat-shipping{background:linear-gradient(135deg,#8b5cf6,#7c3aed)}.stat-done{background:linear-gradient(135deg,#10b981,#059669)}
+    .stat-num{font-size:26px;font-weight:800}.stat-label{font-size:12px;opacity:.9;margin-top:2px}
+    .order-card{background:#fff;border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:0 4px 16px rgba(200,16,46,.08);transition:0.2s}.order-card:hover{box-shadow:0 6px 20px rgba(200,16,46,.15)}
+    .order-id{font-family:monospace;font-weight:700;color:#c8102e;font-size:15px}
+    .status-chip{font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px}
+    .chip-pending{background:#fff3cd;color:#856404}.chip-confirmed{background:#cfe2ff;color:#084298}
+    .chip-shipping{background:#d1ecf1;color:#0c5460}.chip-done{background:#d4edda;color:#155724}.chip-cancelled{background:#f8d7da;color:#721c24}
+    .chip-awaiting{background:#e2d9f3;color:#432874}
+    .chip-bank-pending{background:#fff3cd;color:#664d03;border:1px solid #ffecb5;font-weight:700}
+    .chip-bank-paid{background:#d1e7dd;color:#0a3622}
+    .pay-method-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;margin-left:6px}
+    .pay-cod{background:#e2e3e5;color:#41464b}
+    .pay-bank{background:#cff4fc;color:#055160}
+    .bank-alert-row{background:linear-gradient(90deg,#fff3cd,#fffbea);border-left:4px solid #ffc107;border-radius:0 8px 8px 0;padding:8px 12px;margin-top:8px;font-size:13px}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+    .modal-box{background:#fff;border-radius:24px;padding:28px 32px;width:600px;max-width:96vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(200,16,46,.15)}
+    .search-box{position:relative}.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#adb5bd}.search-box input{padding-left:42px;border-radius:30px;border:1px solid #dee2e6;background:#fff;transition:0.2s}.search-box input:focus{border-color:#c8102e;box-shadow:0 0 0 0.2rem rgba(200,16,46,.25)}
+  </style>
+</head><body>
+<div class="staff-layout">
+  <div class="staff-sidebar">
+    <div class="sidebar-brand">Nhân viên</div>
+    <nav class="sidebar-nav">
+      <a href="/staff/orders.html" class="sidebar-link active"><i class="bi bi-bag-check me-2"></i>Đơn hàng</a>
+      <a href="/staff/products.html" class="sidebar-link"><i class="bi bi-box me-2"></i>Sản phẩm</a>
+      <a href="/staff/support.html" class="sidebar-link"><i class="bi bi-chat-dots me-2"></i>Hỗ trợ KH</a>
+      <a href="/staff/sales.html" class="sidebar-link"><i class="bi bi-graph-up me-2"></i>Doanh thu</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="small text-white-50">Đăng nhập với tư cách</div>
+      <div class="sidebar-footer-name" id="staffName">Nhân viên</div>
+      <button class="btn btn-sm btn-outline-light mt-2 w-100" onclick="doLogout()">Đăng xuất</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <h3 class="fw-bold mb-0">Quản lý đơn hàng</h3>
+      <div class="d-flex gap-2 flex-wrap">
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text" id="searchInput" class="form-control" placeholder="Mã đơn, tên KH, SĐT..." style="width:260px" onkeyup="filterOrders()">
+        </div>
+        <select id="filterStatus" class="form-select form-select-sm" style="width:140px" onchange="filterOrders()">
+          <option value="">Tất cả</option><option value="pending">Chờ xác nhận</option><option value="confirmed">Đã xác nhận</option>
+          <option value="shipping">Đang giao</option><option value="done">Hoàn thành</option><option value="cancelled">Đã hủy</option>
+        </select>
+        <button class="btn btn-sm btn-outline-secondary" onclick="loadOrders()"><i class="bi bi-arrow-clockwise"></i></button>
+      </div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3"><div class="stat-card stat-pending"><div class="stat-num" id="cPending">–</div><div class="stat-label">Chờ xác nhận</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card stat-confirmed"><div class="stat-num" id="cConfirmed">–</div><div class="stat-label">Đã xác nhận</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card stat-shipping"><div class="stat-num" id="cShipping">–</div><div class="stat-label">Đang giao</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card stat-done"><div class="stat-num" id="cDone">–</div><div class="stat-label">Hoàn thành</div></div></div>
+<!--      <div class="col-6 col-md-3"><div class="stat-card" style="background:linear-gradient(135deg,#f59e0b,#b45309)"><div class="stat-num" id="cBankPending">–</div><div class="stat-label">💳 Chờ thanh toán CK</div></div></div>-->
+    </div>
+    <div id="orderList"><div class="text-center py-4"><div class="spinner-border text-danger"></div></div></div>
+  </div>
+</div>
+<div class="modal-overlay d-none" id="detailModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modalContent"></div>
+</div>
+<script src="/shop-api.js"></script>
+<script>
+  const sess = session.get('staffSession');
+  if (!sess) location.href = '/staff/login.html';
+  document.getElementById('staffName').textContent = sess?.name || 'Nhân viên';
+  let orders = [];
+  const SM = {awaiting_payment:{l:'Chờ thanh toán',c:'chip-awaiting'},pending:{l:'Chờ xác nhận',c:'chip-pending'},confirmed:{l:'Đã xác nhận',c:'chip-confirmed'},shipping:{l:'Đang giao',c:'chip-shipping'},done:{l:'Hoàn thành',c:'chip-done'},cancelled:{l:'Đã hủy',c:'chip-cancelled'}};
+  const PM = {cod:'COD',bank:'Chuyển khoản'};
+
+  async function loadOrders() {
+    try {
+      orders = await api.orders.getAll();
+      ['pending','confirmed','shipping','done'].forEach(s => {
+        const el = document.getElementById('c'+s.charAt(0).toUpperCase()+s.slice(1));
+        if(el) el.textContent = orders.filter(o=>o.status===s).length;
+      });
+      const bpEl = document.getElementById('cBankPending');
+      if(bpEl) bpEl.textContent = orders.filter(o=>o.status==='awaiting_payment').length;
+      filterOrders();
+    } catch(e) { console.error(e); }
+  }
+
+  function filterOrders() {
+    const statusFilter = document.getElementById('filterStatus').value;
+    const searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
+
+    // Lọc theo trạng thái
+    // Luôn ẩn đơn 'awaiting_payment' (chờ TT) - nhân viên chỉ thấy sau khi khách đã trả
+    let filtered = statusFilter
+            ? orders.filter(o=>o.status===statusFilter)
+            : orders.filter(o=>o.status!=='awaiting_payment');
+
+    // Lọc theo từ khóa tìm kiếm (mã đơn, tên khách, số điện thoại)
+    if (searchKeyword) {
+      filtered = filtered.filter(o => {
+        // Tìm theo mã đơn (chuyển id thành string và so sánh)
+        const orderIdMatch = String(o.id).toLowerCase().includes(searchKeyword);
+        // Tìm theo tên khách hàng
+        const customerMatch = (o.customerName || '').toLowerCase().includes(searchKeyword);
+        // Tìm theo số điện thoại
+        const phoneMatch = (o.phone || '').toLowerCase().includes(searchKeyword);
+        return orderIdMatch || customerMatch || phoneMatch;
+      });
+    }
+
+    // Sắp xếp: pending lên đầu, cancelled xuống cuối, các trạng thái còn lại theo thời gian
+    filtered.sort((a,b) => {
+      if (a.status === 'pending' && b.status !== 'pending') return -1;
+      if (b.status === 'pending' && a.status !== 'pending') return 1;
+      if (a.status === 'cancelled' && b.status !== 'cancelled') return 1;
+      if (b.status === 'cancelled' && a.status !== 'cancelled') return -1;
+      const dateA = a.orderDate ? new Date(a.orderDate) : new Date(0);
+      const dateB = b.orderDate ? new Date(b.orderDate) : new Date(0);
+      return dateB - dateA;
+    });
+
+    const el = document.getElementById('orderList');
+    if (!filtered.length) {
+      el.innerHTML='<div class="text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Không tìm thấy đơn hàng nào</div>';
+      return;
+    }
+    el.innerHTML = filtered.map(o => {
+      const s = SM[o.status]||{l:o.status,c:'chip-pending'};
+      let items = [];
+      try { items = JSON.parse(o.items||'[]'); } catch(e){}
+      // Làm nổi bật từ khóa tìm kiếm trong tên khách hàng và mã đơn
+      let displayName = o.customerName || '—';
+      let displayPhone = o.phone || '—';
+      let displayId = `#${String(o.id).slice(-6)}`;
+      if (searchKeyword) {
+        const regex = new RegExp(`(${searchKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        displayName = displayName.replace(regex, '<mark class="bg-warning bg-opacity-25 px-0 rounded">$1</mark>');
+        displayPhone = displayPhone.replace(regex, '<mark class="bg-warning bg-opacity-25 px-0 rounded">$1</mark>');
+        displayId = displayId.replace(regex, '<mark class="bg-warning bg-opacity-25 px-0 rounded">$1</mark>');
+      }
+      return `<div class="order-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div><span class="order-id">${displayId}</span><span class="status-chip ms-2 ${s.c}">${s.l}</span>${o.payment==='bank'?`<span class="pay-method-badge pay-bank ms-1">🏦 Chuyển khoản${o.paymentStatus==='paid'?' ✅':' ⏳'}</span>`:'<span class="pay-method-badge pay-cod ms-1">💵 COD</span>'}</div>
+          <small class="text-muted">${o.orderDate?new Date(o.orderDate).toLocaleString('vi-VN'):'—'}</small>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-4">
+            <p class="mb-1 small"><strong>Khách:</strong> ${displayName}</p>
+            <p class="mb-1 small"><strong>SĐT:</strong> ${displayPhone}</p>
+          </div>
+          <div class="col-md-4">
+            <p class="mb-1 small fw-semibold">Sản phẩm (${items.length}):</p>
+            ${items.slice(0,3).map(i=>`<div class="small text-muted">• ${i.name} x${i.qty}${i.size?' ('+i.size+')':''}</div>`).join('')}
+            ${items.length>3?`<small class="text-muted">+${items.length-3} khác</small>`:''}
+          </div>
+          <div class="col-md-4 text-md-end">
+            <div class="fw-bold text-danger fs-5">${fp(o.total)}</div>
+            <div class="d-flex gap-2 justify-content-md-end flex-wrap mt-2">
+              <button class="btn btn-sm btn-outline-info" onclick="viewDetail(${o.id})"><i class="bi bi-eye me-1"></i>Chi tiết</button>
+              ${o.status==='pending'?`<button class="btn btn-sm btn-success" onclick="updateStatus(${o.id},'confirmed')">✓ Xác nhận</button>`:''}
+              ${o.status==='confirmed'?`<button class="btn btn-sm btn-primary" onclick="updateStatus(${o.id},'shipping')">🚚 Giao hàng</button>`:''}
+              ${o.status==='shipping'?`<button class="btn btn-sm btn-info text-white" onclick="updateStatus(${o.id},'done')">✓ Đã giao</button>`:''}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function updateStatus(id, status) {
+    try { await api.orders.updateStatus(id, status); loadOrders(); }
+    catch(e) { alert(e.message); }
+  }
+
+  async function confirmPayment(id) {
+    if (!confirm('Xác nhận đã nhận được tiền chuyển khoản từ khách hàng?\nĐơn hàng sẽ tự động chuyển sang trạng thái "Đã xác nhận".')) return;
+    try {
+      await fetch(`/api/orders/${id}/confirm-payment`, { method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + (session.get('staffSession')?.token || '') }
+      });
+      loadOrders();
+    } catch(e) { alert('Lỗi xác nhận thanh toán: ' + e.message); }
+  }
+
+  function viewDetail(id) {
+    const o = orders.find(x=>x.id===id); if(!o) return;
+    let items = []; try { items = JSON.parse(o.items||'[]'); } catch(e){}
+    const s = SM[o.status]||{l:o.status,c:'chip-pending'};
+    document.getElementById('modalContent').innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Chi tiết đơn #${String(o.id).slice(-6)}</h5>
+        <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="closeModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="row g-2 small mb-3">
+        <div class="col-6"><strong>Khách:</strong> ${o.customerName}</div><div class="col-6"><strong>SĐT:</strong> ${o.phone||'—'}</div>
+        <div class="col-12"><strong>Địa chỉ:</strong> ${o.address||'—'}</div>
+        <div class="col-6"><strong>Ngày đặt:</strong> ${o.orderDate?new Date(o.orderDate).toLocaleString('vi-VN'):'—'}</div>
+        <div class="col-6"><strong>Trạng thái:</strong> <span class="status-chip ${s.c}">${s.l}</span></div>
+        <div class="col-6"><strong>Thanh toán:</strong> ${o.payment==='bank'?'🏦 Chuyển khoản':'💵 COD'}</div>
+        <div class="col-6"><strong>Trạng thái TT:</strong> ${o.payment==='bank'?(o.paymentStatus==='paid'?'<span class="badge bg-success">✅ Đã thanh toán</span>':'<span class="badge bg-warning text-dark">⏳ Chờ xác nhận</span>'):'<span class="badge bg-secondary">COD</span>'}</div>
+      </div>
+      <hr/>
+      <h6 class="fw-bold mb-3" style="color:#c8102e">Sản phẩm (${items.length})</h6>
+      ${items.map(item=>`<div class="d-flex align-items-center gap-2 py-2 border-bottom">
+        <img src="${item.image||''}" style="width:48px;height:60px;object-fit:cover;border-radius:8px" onerror="this.src='https://via.placeholder.com/48x60'"/>
+        <div class="flex-grow-1"><div class="fw-semibold small">${item.name}</div><small class="text-muted">x${item.qty}${item.size?' | '+item.size:''}</small></div>
+        <div class="fw-bold text-danger small">${fp(item.price*item.qty)}</div>
+      </div>`).join('')}
+      <div class="d-flex justify-content-between fw-bold mt-3"><span>Tổng cộng</span><span class="text-danger fs-5">${fp(o.total)}</span></div>`;
+    document.getElementById('detailModal').classList.remove('d-none');
+  }
+
+  function closeModal(){document.getElementById('detailModal').classList.add('d-none');}
+  function fp(p){return Number(p||0).toLocaleString('vi-VN')+' đ';}
+  function doLogout(){session.remove('staffSession');location.href='/staff/login.html';}
+  loadOrders();
+  setInterval(loadOrders, 30000);
+</script>
+</body></html>

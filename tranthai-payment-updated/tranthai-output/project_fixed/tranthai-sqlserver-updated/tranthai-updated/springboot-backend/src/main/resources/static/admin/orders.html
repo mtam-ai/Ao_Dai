@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Hóa đơn – TranThai Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <style>
+    body{margin:0;font-family:"Montserrat",sans-serif;background:#f8f9fa}
+    .admin-layout{display:flex;min-height:100vh}
+    .admin-sidebar{width:230px;background:linear-gradient(180deg,#c8102e,#7a0b1c);padding:24px 16px;min-height:100vh;position:sticky;top:0;display:flex;flex-direction:column;flex-shrink:0}
+    .sidebar-brand{font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.2)}
+    .sidebar-nav{flex:1;margin-top:12px}
+    .sidebar-link{display:block;color:rgba(255,255,255,.8);text-decoration:none;padding:11px 14px;border-radius:12px;margin-bottom:4px;font-weight:500;transition:.2s;font-size:14px}
+    .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.2);color:#fff}
+    .sidebar-footer{border-top:1px solid rgba(255,255,255,.2);padding-top:16px}
+    .content-area{flex:1;padding:28px;overflow-x:auto}
+    .stat-card{background:#fff;border-radius:14px;padding:16px 20px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+    .stat-num{font-size:22px;font-weight:800}.stat-label{font-size:12px;color:#888;margin-top:4px}
+    .table-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:#f8f8f8;padding:10px 14px;font-size:12px;font-weight:700;color:#888;text-transform:uppercase}
+    tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+    tbody tr:hover td{background:#fafafa}
+    .status-chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
+    .chip-pending{background:#fffbeb;color:#f59e0b}.chip-confirmed{background:#eff6ff;color:#3b82f6}
+    .chip-shipping{background:#f5f3ff;color:#8b5cf6}.chip-done{background:#ecfdf5;color:#10b981}
+    .chip-cancelled{background:#f9fafb;color:#6b7280}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:#fff;border-radius:20px;padding:28px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
+    .search-wrap{position:relative}
+    .search-wrap input{padding-left:36px}
+    .search-ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#aaa}
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <div class="admin-sidebar">
+    <div class="sidebar-brand">Admin</div>
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+      <a href="/admin/staff.html" class="sidebar-link"><i class="bi bi-people me-2"></i>Nhân viên</a>
+      <a href="/admin/customers.html" class="sidebar-link"><i class="bi bi-person-lines-fill me-2"></i>Khách hàng</a>
+      <a href="/admin/orders.html" class="sidebar-link active"><i class="bi bi-bag-check me-2"></i>Hóa đơn</a>
+      <a href="/admin/products.html" class="sidebar-link"><i class="bi bi-box me-2"></i>Sản phẩm</a>
+      <a href="/admin/sales.html" class="sidebar-link"><i class="bi bi-graph-up me-2"></i>Doanh thu</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="font-size:12px;color:rgba(255,255,255,.5)">Đăng nhập với tư cách</div>
+      <div style="font-weight:700;color:#fff;font-size:14px" id="adminName">Admin</div>
+      <button class="btn btn-sm btn-outline-light mt-2 w-100" onclick="doLogout()"><i class="bi bi-box-arrow-right me-1"></i>Đăng xuất</button>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="fw-bold">Quản lý hóa đơn</h3>
+      <div class="d-flex gap-2">
+        <div class="search-wrap"><i class="bi bi-search search-ic"></i><input id="searchInput" class="form-control" placeholder="Tìm mã đơn, khách..." oninput="applyFilter()" style="width:240px"/></div>
+        <select id="statusFilter" class="form-select form-select-sm" style="width:160px" onchange="applyFilter()">
+          <option value="">Tất cả</option>
+          <option value="pending">Chờ xác nhận</option>
+          <option value="confirmed">Đã xác nhận</option>
+          <option value="shipping">Đang giao</option>
+          <option value="done">Hoàn thành</option>
+          <option value="cancelled">Đã hủy</option>
+        </select>
+        <button class="btn btn-outline-secondary btn-sm" onclick="loadOrders()"><i class="bi bi-arrow-clockwise"></i></button>
+      </div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-num" style="color:#f59e0b" id="sPending">0</div><div class="stat-label">Chờ xác nhận</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-num" style="color:#3b82f6" id="sConfirmed">0</div><div class="stat-label">Đã xác nhận</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-num" style="color:#8b5cf6" id="sShipping">0</div><div class="stat-label">Đang giao</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-num" style="color:#10b981" id="sDone">0</div><div class="stat-label">Hoàn thành</div></div></div>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Ngày đặt</th><th>Trạng thái</th><th>Chi tiết</th></tr></thead>
+        <tbody id="ordersBody"><tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-danger"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="fw-bold fs-5" id="modalTitle">Chi tiết đơn hàng</div>
+      <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+<script src="/shop-api.js"></script>
+<script>
+  const sess = session.get('adminSession');
+  if (!sess) location.href = '/admin/login.html';
+  document.getElementById('adminName').textContent = sess?.name || 'Admin';
+
+  let allOrders = [], currentOrder = null;
+  const SM = {pending:{l:'Chờ xác nhận',c:'chip-pending'},confirmed:{l:'Đã xác nhận',c:'chip-confirmed'},shipping:{l:'Đang giao',c:'chip-shipping'},done:{l:'Hoàn thành',c:'chip-done'},cancelled:{l:'Đã hủy',c:'chip-cancelled'}};
+
+  async function loadOrders() {
+    try {
+      allOrders = await api.orders.getAll();
+      ['pending','confirmed','shipping','done'].forEach(s => {
+        const el = document.getElementById('s' + s.charAt(0).toUpperCase() + s.slice(1));
+        if (el) el.textContent = allOrders.filter(o=>o.status===s).length;
+      });
+      applyFilter();
+    } catch(e) { console.error(e); }
+  }
+
+  function applyFilter() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const st = document.getElementById('statusFilter').value;
+    const filtered = allOrders.filter(o => {
+      const mq = !q || String(o.id).includes(q) || (o.customerName||'').toLowerCase().includes(q);
+      return mq && (!st || o.status === st);
+    });
+    const tbody = document.getElementById('ordersBody');
+    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Không có đơn hàng</td></tr>'; return; }
+    tbody.innerHTML = filtered.map(o => {
+      const s = SM[o.status]||{l:o.status,c:'chip-pending'};
+      let items = [];
+      try { items = JSON.parse(o.items||'[]'); } catch{}
+      const itext = items.slice(0,2).map(i=>`${i.name} x${i.qty}`).join(', ');
+      return `<tr>
+        <td><strong style="color:#c8102e">#${String(o.id).slice(-6)}</strong></td>
+        <td><div class="fw-semibold small">${o.customerName||'—'}</div><small class="text-muted">${o.phone||''}</small></td>
+        <td class="small text-muted">${itext}${items.length>2?` +${items.length-2}`:''}</td>
+        <td class="fw-bold text-danger">${fp(o.total)}</td>
+        <td class="small text-muted">${o.orderDate?new Date(o.orderDate).toLocaleDateString('vi-VN'):'—'}</td>
+        <td><span class="status-chip ${s.c}">${s.l}</span></td>
+        <td><button class="btn btn-sm btn-outline-danger" onclick="viewDetail(${o.id})"><i class="bi bi-eye"></i></button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function viewDetail(id) {
+    currentOrder = allOrders.find(o=>o.id===id); if(!currentOrder) return;
+    const s = SM[currentOrder.status]||{l:currentOrder.status,c:'chip-pending'};
+    let items = []; try { items = JSON.parse(currentOrder.items||'[]'); } catch{}
+    document.getElementById('modalTitle').textContent = `Đơn hàng #${String(currentOrder.id).slice(-6)}`;
+    document.getElementById('modalContent').innerHTML = `
+      <div class="mb-3">
+        <div class="row g-2 small">
+          <div class="col-6"><strong>Khách:</strong> ${currentOrder.customerName||'—'}</div>
+          <div class="col-6"><strong>SĐT:</strong> ${currentOrder.phone||'—'}</div>
+          <div class="col-12"><strong>Địa chỉ:</strong> ${currentOrder.address||'—'}</div>
+          <div class="col-12"><strong>Trạng thái:</strong> <span class="status-chip ${s.c}">${s.l}</span></div>
+        </div>
+      </div>
+      <hr/>
+      <h6 class="fw-bold mb-2">Sản phẩm</h6>
+      ${items.map(item=>`<div class="d-flex align-items-center gap-2 py-2 border-bottom">
+        <img src="${item.image||''}" style="width:48px;height:60px;object-fit:cover;border-radius:8px" onerror="this.src='https://via.placeholder.com/48x60'"/>
+        <div class="flex-grow-1"><div class="fw-semibold small">${item.name}</div><small class="text-muted">x${item.qty}${item.size?' | '+item.size:''}</small></div>
+        <div class="fw-bold text-danger small">${fp(item.price*item.qty)}</div>
+      </div>`).join('')}
+      <div class="d-flex justify-content-between fw-bold mt-3"><span>Tổng cộng</span><span class="text-danger fs-5">${fp(currentOrder.total)}</span></div>
+      <hr/>
+      <div class="d-flex align-items-center gap-2 mt-2">
+        <label class="fw-semibold small">Cập nhật trạng thái:</label>
+        <select id="newStatus" class="form-select form-select-sm" style="width:180px">
+          ${['pending','confirmed','shipping','done','cancelled'].map(v=>`<option value="${v}" ${currentOrder.status===v?'selected':''}>${SM[v].l}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm btn-danger" onclick="updateStatus()">Cập nhật</button>
+      </div>`;
+    document.getElementById('detailModal').classList.add('open');
+  }
+
+  async function updateStatus() {
+    const newSt = document.getElementById('newStatus').value;
+    try {
+      await api.orders.updateStatus(currentOrder.id, newSt);
+      closeModal(); loadOrders();
+      alert('Đã cập nhật trạng thái!');
+    } catch(e) { alert(e.message); }
+  }
+
+  function closeModal() { document.getElementById('detailModal').classList.remove('open'); }
+  document.getElementById('detailModal').addEventListener('click', e => { if (e.target === document.getElementById('detailModal')) closeModal(); });
+  function fp(p){return Number(p||0).toLocaleString('vi-VN')+' đ';}
+  function doLogout(){if(confirm('Bạn có chắc muốn đăng xuất?')){session.remove('adminSession');location.href='/admin/login.html';}}
+  loadOrders();
+</script>
+</body>
+</html>
